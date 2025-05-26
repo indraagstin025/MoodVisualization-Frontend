@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoodVis - Pahami Emosi, Tingkatkan Kesejahteraan</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Mengatur font global */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Animasi sederhana untuk Hero Section */
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .hero-animate {
+            animation: fadeInScale 1s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="font-inter antialiased bg-white text-gray-800">
+
+    <nav class="bg-white shadow-sm p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#" class="text-3xl font-extrabold text-green-600">MoodVis</a>
+            <div class="space-x-6 hidden md:block">
+                <a href="#about" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Tentang</a>
+                <a href="#features" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Fitur</a>
+                <a href="#how-it-works" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Cara Kerja</a>
+                <a href="#contact" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Kontak</a>
+                <button id="ctaButton" class="bg-green-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition duration-300 shadow-md">Coba Gratis</button>
+            </div>
+            <button id="mobileMenuButton" class="md:hidden text-gray-700 focus:outline-none">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+        <div id="mobileMenu" class="md:hidden hidden absolute top-16 left-0 right-0 bg-white shadow-lg py-4 z-50">
+            <a href="#about" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Tentang</a>
+            <a href="#features" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Fitur</a>
+            <a href="#how-it-works" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Cara Kerja</a>
+            <a href="#contact" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Kontak</a>
+            <button class="w-full text-left bg-green-600 text-white px-4 py-2 mt-2 rounded-lg hover:bg-green-700 transition duration-300" id="ctaButtonMobile">Coba Gratis</button>
+        </div>
+    </nav>
+
+    <header class="bg-gradient-to-br from-green-500 to-green-700 text-white py-24 md:py-32 flex items-center justify-center min-h-[60vh] hero-animate">
+        <div class="container mx-auto text-center px-4">
+            <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mb-6">
+                MoodVis: <span class="block mt-2">Deteksi Emosi & Visualisasi Suasana Hati</span>
+            </h1>
+            <p class="text-xl md:text-2xl max-w-3xl mx-auto mb-10 opacity-90">
+                Pahami diri Anda lebih baik, kelola emosi, dan tingkatkan kesejahteraan mental dengan teknologi AI inovatif.
+            </p>
+<a href="onboard.html" id="heroCtaButton" class="inline-block bg-white text-green-700 px-10 py-5 rounded-full text-lg font-bold hover:bg-gray-100 transition duration-300 shadow-xl transform hover:scale-105">
+    Mulai Perjalanan Emosi Anda
+</a>
+
+        </div>
+    </header>
+
+    <section id="about" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-bold text-center mb-16 text-green-700">Apa itu MoodVis?</h2>
+            <div class="flex flex-col md:flex-row items-center justify-center gap-12">
+                <div class="md:w-1/2 text-lg text-gray-700 leading-relaxed">
+                    <p class="mb-6">
+                        **MoodVis** adalah platform canggih yang menggunakan **kecerdasan buatan** untuk **menganalisis dan memvisualisasikan pola emosi Anda**. Kami menyediakan alat yang intuitif untuk membantu Anda melacak, memahami, dan merespons kondisi emosional Anda dari waktu ke waktu.
+                    </p>
+                    <p>
+                        Dari identifikasi pemicu stres hingga penemuan pola kebahagiaan, MoodVis dirancang untuk memberdayakan Anda dengan wawasan yang jelas tentang **kesehatan mental** Anda. Misi kami adalah membuat pemahaman diri lebih mudah diakses dan pribadi.
+                    </p>
+                </div>
+                <div class="md:w-1/2 relative">
+                    <img src="https://via.placeholder.com/600x400?text=Visualisasi+Data+Emosi" alt="Ilustrasi MoodVis Dashboard" class="rounded-xl shadow-2xl border-4 border-green-200">
+                    <div class="absolute -bottom-4 -right-4 bg-green-200 text-green-800 px-6 py-3 rounded-lg shadow-lg font-semibold text-sm">
+                        <span class="block">Data Emosi Anda,</span>
+                        <span class="block">Visualisasi Menarik.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="py-20 bg-green-50">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-bold text-center mb-16 text-green-700">Fitur Utama</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <div class="bg-white p-8 rounded-xl shadow-lg text-center transform hover:scale-105 transition duration-300 border border-green-100">
+                    <div class="text-6xl text-green-600 mb-6">💡</div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-800">Deteksi Emosi Cerdas</h3>
+                    <p class="text-gray-600">Teknologi AI mutakhir menganalisis input teks, suara, atau ekspresi wajah Anda dengan presisi tinggi.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg text-center transform hover:scale-105 transition duration-300 border border-green-100">
+                    <div class="text-6xl text-lime-600 mb-6">📊</div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-800">Visualisasi Data Interaktif</h3>
+                    <p class="text-gray-600">Lihat tren emosi Anda dalam grafik dan dasbor yang intuitif, membuat pemahaman diri lebih mudah.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg text-center transform hover:scale-105 transition duration-300 border border-green-100">
+                    <div class="text-6xl text-emerald-600 mb-6">🔒</div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-800">Prioritas Privasi & Keamanan</h3>
+                    <p class="text-gray-600">Data emosi Anda dienkripsi dan dijaga kerahasiaannya, hanya Anda yang memiliki kontrol penuh.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg text-center transform hover:scale-105 transition duration-300 border border-green-100">
+                    <div class="text-6xl text-green-600 mb-6">✍️</div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-800">Jurnal Emosi Digital</h3>
+                    <p class="text-gray-600">Catat pengalaman harian Anda dan kaitkan dengan emosi untuk wawasan yang lebih dalam.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg text-center transform hover:scale-105 transition duration-300 border border-green-100">
+                    <div class="text-6xl text-lime-600 mb-6">📈</div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-800">Analisis Tren Jangka Panjang</h3>
+                    <p class="text-gray-600">Identifikasi pola emosional berulang untuk membantu Anda mengelola kesejahteraan secara proaktif.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg text-center transform hover:scale-105 transition duration-300 border border-green-100">
+                    <div class="text-6xl text-emerald-600 mb-6">📱</div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-800">Akses Multi-Platform</h3>
+                    <p class="text-gray-600">Gunakan MoodVis di desktop atau perangkat seluler Anda dengan pengalaman yang responsif.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-bold text-center mb-16 text-green-700">Bagaimana MoodVis Bekerja?</h2>
+            <div class="flex flex-col md:flex-row justify-center items-stretch gap-10">
+                <div class="flex-1 p-8 bg-green-50 rounded-xl shadow-md text-center flex flex-col items-center">
+                    <div class="w-20 h-20 bg-green-600 text-white rounded-full flex items-center justify-center text-4xl font-bold mb-6 shadow-lg">1</div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-800">Input Emosi Anda</h3>
+                    <p class="text-gray-600 leading-relaxed">Pilih metode input yang paling nyaman bagi Anda: mengetik teks, merekam suara, atau mengunggah gambar ekspresi wajah (segera hadir!).</p>
+                </div>
+                <div class="flex-1 p-8 bg-green-50 rounded-xl shadow-md text-center flex flex-col items-center">
+                    <div class="w-20 h-20 bg-lime-600 text-white rounded-full flex items-center justify-center text-4xl font-bold mb-6 shadow-lg">2</div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-800">Analisis AI Cerdas</h3>
+                    <p class="text-gray-600 leading-relaxed">Sistem AI kami yang kuat akan memproses input Anda, mengidentifikasi emosi yang dominan dan nuansanya dengan akurasi tinggi.</p>
+                </div>
+                <div class="flex-1 p-8 bg-green-50 rounded-xl shadow-md text-center flex flex-col items-center">
+                    <div class="w-20 h-20 bg-emerald-600 text-white rounded-full flex items-center justify-center text-4xl font-bold mb-6 shadow-lg">3</div>
+                    <h3 class="text-2xl font-semibold mb-4 text-gray-800">Visualisasi & Wawasan</h3>
+                    <p class="text-gray-600 leading-relaxed">Dapatkan visualisasi yang jelas dan mudah dipahami tentang suasana hati Anda, serta wawasan personal untuk meningkatkan kesejahteraan.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-gradient-to-r from-green-600 to-green-800 text-white py-20 text-center">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl md:text-5xl font-bold mb-8 leading-tight">
+                Siap Memahami Diri Lebih Dalam?
+            </h2>
+            <p class="text-xl md:text-2xl max-w-3xl mx-auto mb-10 opacity-90">
+                Bergabunglah dengan ribuan pengguna lain yang telah merasakan manfaat dari MoodVis.
+            </p>
+            <button id="bottomCtaButton" class="bg-white text-green-700 px-10 py-5 rounded-full text-lg font-bold hover:bg-gray-100 transition duration-300 shadow-xl transform hover:scale-105">
+                Daftar Gratis Sekarang!
+            </button>
+        </div>
+    </section>
+
+    <section id="contact" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl font-bold mb-8 text-green-700">Hubungi Kami</h2>
+            <p class="text-lg text-gray-700 mb-6 max-w-xl mx-auto">
+                Ada pertanyaan, masukan, atau ingin bermitra? Kami senang mendengar dari Anda!
+            </p>
+            <div class="flex flex-col items-center justify-center gap-4">
+                <p class="text-2xl font-semibold text-green-600">
+                    Email: <a href="mailto:info@moodvis.com" class="hover:underline">info@moodvis.com</a>
+                </p>
+                <p class="text-xl text-gray-700">Atau ikuti kami di media sosial:</p>
+                <div class="flex space-x-6 mt-4">
+                    <a href="#" class="text-gray-600 hover:text-green-600 transition duration-200 text-4xl" aria-label="Facebook">📘</a>
+                    <a href="#" class="text-gray-600 hover:text-green-600 transition duration-200 text-4xl" aria-label="Instagram">📸</a>
+                    <a href="#" class="text-gray-600 hover:text-green-600 transition duration-200 text-4xl" aria-label="Twitter">🐦</a>
+                    <a href="#" class="text-gray-600 hover:text-green-600 transition duration-200 text-4xl" aria-label="LinkedIn">💼</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-900 text-white py-10">
+        <div class="container mx-auto text-center px-6">
+            <div class="mb-4">
+                <a href="#" class="text-3xl font-extrabold text-green-500">MoodVis</a>
+            </div>
+            <p class="text-gray-400">&copy; 2025 MoodVis. Semua Hak Cipta Dilindungi.</p>
+            <div class="mt-6 text-sm flex flex-wrap justify-center gap-x-6 gap-y-2">
+                <a href="#" class="text-gray-400 hover:text-white transition duration-200">Kebijakan Privasi</a>
+                <a href="#" class="text-gray-400 hover:text-white transition duration-200">Syarat & Ketentuan</a>
+                <a href="#" class="text-gray-400 hover:text-white transition duration-200">FAQ</a>
+            </div>
+        </div>
+    </footer>
+
+      <script type="module" src="js/dashboard.js"></script>
+
+</body>
+</html>

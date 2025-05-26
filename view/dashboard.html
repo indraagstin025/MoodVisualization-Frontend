@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MoodVis - Dashboard Anda</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      /* Mengatur font global */
+      body {
+        font-family: "Inter", sans-serif;
+      }
+    </style>
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="font-inter antialiased bg-green-50 text-gray-800 min-h-screen flex flex-col">
+    <nav class="bg-white shadow-sm p-4 sticky top-0 z-50">
+      <div class="container mx-auto flex justify-between items-center">
+        <a href="dashboard.html" class="text-3xl font-extrabold text-green-600">MoodVis</a>
+        <div class="space-x-6 hidden md:block">
+          <a href="#overview" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Ringkasan</a>
+          <a href="#analysis" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Analisis Emosi</a>
+          <a href="#journal" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Jurnal</a>
+          <a href="#settings" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Pengaturan</a>
+          <button id="logoutButton" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300 shadow-md">Logout</button>
+        </div>
+        <button id="mobileMenuButton" class="md:hidden text-gray-700 focus:outline-none">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+      </div>
+      <div id="mobileMenu" class="md:hidden hidden absolute top-16 left-0 right-0 bg-white shadow-lg py-4 z-50">
+        <a href="#overview" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Ringkasan</a>
+        <a href="#analysis" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Analisis Emosi</a>
+        <a href="#journal" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Jurnal</a>
+        <a href="#settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Pengaturan</a>
+        <button class="w-full text-left bg-gray-200 text-gray-700 px-4 py-2 mt-2 rounded-lg hover:bg-gray-300 transition duration-300" id="logoutButtonMobile">Logout</button>
+      </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto px-6 py-12">
+      <h1 class="text-4xl font-bold text-green-700 mb-10">Halo, [Nama Pengguna]! Selamat Datang di Dashboard Anda.</h1>
+
+      <section id="overview" class="mb-12">
+        <h2 class="text-3xl font-semibold text-gray-800 mb-6">Ringkasan Suasana Hati Anda</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="bg-white p-6 rounded-lg shadow-md border border-green-100 text-center">
+            <p class="text-lg text-gray-600 mb-2">Emosi Dominan Hari Ini:</p>
+            <p class="text-4xl font-bold text-green-600">Bahagia 😊</p>
+            <p class="text-sm text-gray-500 mt-2">Terakhir diperbarui: 20 Mei 2025</p>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow-md border border-green-100 text-center">
+            <p class="text-lg text-gray-600 mb-2">Rata-rata Mood Mingguan:</p>
+            <p class="text-4xl font-bold text-yellow-600">Netral 😐</p>
+            <p class="text-sm text-gray-500 mt-2">Sedikit fluktuatif</p>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow-md border border-green-100 text-center">
+            <p class="text-lg text-gray-600 mb-2">Total Entri Jurnal:</p>
+            <p class="text-4xl font-bold text-blue-600">45</p>
+            <p class="text-sm text-gray-500 mt-2">Teruslah menulis!</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-12 bg-white p-8 rounded-lg shadow-md border border-green-100">
+        <h2 class="text-3xl font-semibold text-gray-800 mb-6">Bagaimana Perasaan Anda Saat Ini?</h2>
+        <form class="space-y-4">
+          <div>
+            <label for="emotionInput" class="block mb-2 text-gray-700 font-medium">Tuliskan perasaan Anda:</label>
+            <textarea
+              id="emotionInput"
+              rows="4"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
+              placeholder="Saya merasa senang hari ini karena..."
+            ></textarea>
+          </div>
+          <button type="submit" class="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-300 shadow-md transform hover:scale-105">Deteksi & Simpan Emosi</button>
+        </form>
+      </section>
+
+      <section class="mb-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <a href="monitoring.html" class="block">
+          <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-8 rounded-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer h-full flex flex-col justify-center">
+            <div class="flex items-center space-x-6">
+              <div class="text-6xl">📸</div>
+              <div>
+                <h2 class="text-3xl font-bold mb-2">Mulai Deteksi Emosi Wajah Anda</h2>
+                <p class="text-lg opacity-90">Gunakan webcam Anda untuk menganalisis ekspresi dan memahami mood Anda secara real-time.</p>
+                <span class="mt-4 inline-block bg-white text-green-700 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition duration-300 shadow-md">Deteksi Sekarang →</span>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <a href="history.html" class="block">
+          <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-8 rounded-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer h-full flex flex-col justify-center">
+            <div class="flex items-center space-x-6">
+              <div class="text-6xl">📈</div>
+              <div>
+                <h2 class="text-3xl font-bold mb-2">Lihat Riwayat & Analisis</h2>
+                <p class="text-lg opacity-90">Jelajahi grafik dan log deteksi emosi Anda dari waktu ke waktu untuk melihat tren.</p>
+                <span class="mt-4 inline-block bg-white text-blue-700 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition duration-300 shadow-md">Lihat Riwayat →</span>
+              </div>
+            </div>
+          </div>
+        </a>
+      </section>
+
+      <section id="analysis" class="mb-12">
+        <h2 class="text-3xl font-semibold text-gray-800 mb-6">Analisis Emosi Mendalam</h2>
+        <div class="bg-white p-8 rounded-lg shadow-md border border-green-100">
+          <h3 class="text-2xl font-semibold mb-4 text-gray-700">Tren Emosi Mingguan</h3>
+          <div class="h-64 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 border border-dashed border-gray-300">
+            <p>Grafik Tren Emosi akan ditampilkan di sini</p>
+          </div>
+          <h3 class="text-2xl font-semibold mt-8 mb-4 text-gray-700">Distribusi Emosi</h3>
+          <div class="h-64 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 border border-dashed border-gray-300">
+            <p>Diagram Distribusi Emosi akan ditampilkan di sini</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="journal" class="mb-12">
+        <h2 class="text-3xl font-semibold text-gray-800 mb-6">Jurnal Emosi Terakhir</h2>
+        <div class="bg-white p-8 rounded-lg shadow-md border border-green-100">
+          <div class="space-y-6">
+            <div class="border-b pb-4 border-gray-200 last:border-b-0 last:pb-0">
+              <p class="text-sm text-gray-500 mb-1">20 Mei 2025, 10:30 WIB - <span class="font-semibold text-green-600">Bahagia</span></p>
+              <p class="text-gray-700">"Sangat bersyukur hari ini karena berhasil menyelesaikan proyek tepat waktu. Rasanya lega sekali!"</p>
+            </div>
+            <div class="border-b pb-4 border-gray-200 last:border-b-0 last:pb-0">
+              <p class="text-sm text-gray-500 mb-1">19 Mei 2025, 15:45 WIB - <span class="font-semibold text-yellow-600">Netral</span></p>
+              <p class="text-gray-700">"Hari yang cukup sibuk dengan banyak rapat, tidak ada yang istimewa. Hanya pekerjaan rutin."</p>
+            </div>
+            <div class="border-b pb-4 border-gray-200 last:border-b-0 last:pb-0">
+              <p class="text-sm text-gray-500 mb-1">18 Mei 2025, 21:00 WIB - <span class="font-semibold text-red-600">Sedih</span></p>
+              <p class="text-gray-700">"Merasa sedikit down setelah mendengar kabar dari teman lama. Butuh waktu untuk mencerna."</p>
+            </div>
+          </div>
+          <div class="text-center mt-8">
+            <a href="#" class="text-green-600 font-semibold hover:underline">Lihat Semua Entri Jurnal →</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="settings" class="mb-12">
+        <h2 class="text-3xl font-semibold text-gray-800 mb-6">Pengaturan Akun</h2>
+        <div class="bg-white p-8 rounded-lg shadow-md border border-green-100">
+          <p class="text-gray-600">Di sini Anda bisa mengelola profil, preferensi notifikasi, dan pengaturan privasi.</p>
+          <button class="mt-6 bg-gray-700 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition duration-300">Edit Profil</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bg-gray-900 text-white py-8">
+      <div class="container mx-auto text-center px-6">
+        <p>&copy; 2025 MoodVis. Semua Hak Cipta Dilindungi.</p>
+        <div class="mt-4 text-sm">
+          <a href="#" class="text-gray-400 hover:text-white mx-2">Kebijakan Privasi</a>
+          <span class="text-gray-400">|</span>
+          <a href="#" class="text-gray-400 hover:text-white mx-2">Syarat & Ketentuan</a>
+        </div>
+      </div>
+    </footer>
+
+ 
+    <script type="module" src="js/dashboard.js"></script>
+
+
+ 
+  </body>
+</html>
