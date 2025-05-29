@@ -4,121 +4,301 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MoodVis - Riwayat Emosi</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        /* Mengatur font global */
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4; /* Warna hijau sangat muda sebagai latar belakang utama */
         }
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .chart-container {
+            background-color: white;
+            border-radius: 1rem; /* Lebih bulat */
+            padding: 1.5rem; /* p-6 */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #d1fae5; /* Border hijau muda */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .table-container {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #d1fae5;
+            overflow: hidden; /* Untuk menjaga border-radius pada tabel */
+        }
+        .nav-link {
+            color: #374151; /* gray-700 */
+            font-weight: 500; /* medium */
+            transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+        .nav-link:hover {
+            color: #059669; /* green-600 */
+            background-color: #ecfdf5; /* green-50 */
+        }
+        .nav-link-active {
+            color: #059669; /* green-600 */
+            font-weight: 600; /* semibold */
+            background-color: #d1fae5; /* green-200 */
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+        .btn-primary { /* Tombol utama, jika diperlukan di tempat lain */
+            background-color: #10b981; /* green-500 */
+            color: white;
+            font-weight: 600;
+            padding: 0.6rem 1.5rem;
+            border-radius: 0.75rem; /* rounded-xl */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-primary:hover {
+            background-color: #059669; /* green-600 */
+            transform: translateY(-2px);
+        }
+        .btn-secondary { /* Untuk tombol seperti Logout */
+            background-color: #e5e7eb; /* gray-200 */
+            color: #374151; /* gray-700 */
+            font-weight: 600;
+            padding: 0.6rem 1.5rem;
+            border-radius: 0.75rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-secondary:hover {
+            background-color: #d1d5db; /* gray-300 */
+            transform: translateY(-2px);
+        }
+        .btn-danger { /* Untuk tombol Hapus */
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            padding: 0.375rem 0.75rem; /* py-1.5 px-3 */
+            border-radius: 0.5rem; /* rounded-lg */
+            font-size: 0.875rem; /* text-sm */
+            transition: background-color 0.3s ease;
+            line-height: 1.25rem; /* Menyamakan tinggi dengan ikon jika ada */
+            display: inline-flex; /* Agar ikon dan teks sejajar */
+            align-items: center;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+        .table-header-custom th {
+            background-color: #065f46; /* green-800 */
+            color: white;
+            padding-top: 0.75rem; /* py-3 */
+            padding-bottom: 0.75rem;
+            padding-left: 1.5rem; /* px-6 */
+            padding-right: 1.5rem;
+            text-align: left;
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 600; /* font-medium diganti semibold */
+            text-transform: uppercase;
+            letter-spacing: 0.05em; /* tracking-wider */
+        }
+        .table-cell-custom {
+            padding: 1rem 1.5rem; /* py-4 px-6 */
+            font-size: 0.875rem; /* text-sm */
+            color: #374151; /* gray-700 */
+            vertical-align: middle;
+        }
+        .table-row-custom:nth-child(even) {
+            background-color: #f9fafb; /* gray-50 */
+        }
+        .table-row-custom:hover {
+            background-color: #f3f4f6; /* gray-100 */
+        }
+        /* Styling untuk badge emosi (jika Anda ingin memindahkannya dari JS ke CSS) */
+        .emotion-badge {
+            padding: 0.25rem 0.75rem; /* px-3 py-1 */
+            display: inline-flex;
+            font-size: 0.75rem; /* text-xs */
+            line-height: 1.25rem; /* leading-5 */
+            font-weight: 600; /* semibold */
+            border-radius: 9999px; /* rounded-full */
+        }
+        .emotion-senang { background-color: #d1fae5; color: #065f46; } /* bg-green-100 text-green-800 */
+        .emotion-sedih { background-color: #dbeafe; color: #1e40af; } /* bg-blue-100 text-blue-800 */
+        .emotion-marah { background-color: #fee2e2; color: #991b1b; } /* bg-red-100 text-red-800 */
+        .emotion-terkejut { background-color: #fef3c7; color: #92400e; } /* bg-yellow-100 text-yellow-800 */
+        .emotion-takut { background-color: #ede9fe; color: #5b21b6; } /* bg-purple-100 text-purple-800 */
+        .emotion-netral { background-color: #e0e7ff; color: #3730a3; } /* bg-indigo-100 text-indigo-800 */
+        .emotion-default { background-color: #f3f4f6; color: #374151; } /* bg-gray-100 text-gray-800 */
+
     </style>
 </head>
-<body class="font-inter antialiased bg-green-50 text-gray-800 min-h-screen flex flex-col">
+<body class="antialiased text-gray-800 min-h-screen flex flex-col">
 
-    <nav class="bg-white shadow-sm p-4 sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="dashboard.html" class="text-3xl font-extrabold text-green-600">MoodVis</a>
-            <div class="space-x-6 hidden md:block">
-                <a href="dashboard.html#overview" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Ringkasan</a>
-                <a href="dashboard.html#analysis" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Analisis Emosi</a>
-                <a href="dashboard.html#journal" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Jurnal</a>
-                <a href="monitoring.html" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Deteksi Wajah</a>
-                <a href="history.html" class="text-green-600 font-semibold px-4 py-2 rounded-full border border-green-600 bg-green-50 transition duration-300">Riwayat</a>
-                <a href="dashboard.html#settings" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Pengaturan</a>
-                <button id="logoutButton" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300 shadow-md">Logout</button>
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="dashboard.html" class="text-4xl font-extrabold text-green-600 hover:text-green-700 transition-colors">MoodVis</a>
+            <div class="hidden md:flex items-center space-x-2">
+                <a href="dashboard.html#overview" class="nav-link">Ringkasan</a>
+                <a href="dashboard.html#analysis" class="nav-link">Analisis Emosi</a>
+                <a href="dashboard.html#journal" class="nav-link">Jurnal</a>
+                <a href="monitoring.html" class="nav-link">Deteksi Wajah</a>
+                <a href="history.html" class="nav-link-active">Riwayat</a>
+                <a href="dashboard.html#settings" class="nav-link">Pengaturan</a>
+                <button id="logoutButton" class="btn-secondary ml-4">Logout</button>
             </div>
             <button id="mobileMenuButton" class="md:hidden text-gray-700 focus:outline-none">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
         </div>
-        <div id="mobileMenu" class="md:hidden hidden absolute top-16 left-0 right-0 bg-white shadow-lg py-4 z-50">
-            <a href="dashboard.html#overview" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Ringkasan</a>
-            <a href="dashboard.html#analysis" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Analisis Emosi</a>
-            <a href="dashboard.html#journal" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Jurnal</a>
-            <a href="monitoring.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Deteksi Wajah</a>
-            <a href="history.html" class="block px-4 py-2 text-green-600 font-semibold hover:bg-green-50">Riwayat</a>
-            <a href="dashboard.html#settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Pengaturan</a>
-            <button class="w-full text-left bg-gray-200 text-gray-700 px-4 py-2 mt-2 rounded-lg hover:bg-gray-300 transition duration-300" id="logoutButtonMobile">Logout</button>
+        <div id="mobileMenu" class="md:hidden hidden bg-white shadow-xl absolute top-full left-0 right-0 z-40 py-2">
+            <a href="dashboard.html#overview" class="block px-6 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">Ringkasan</a>
+            <a href="dashboard.html#analysis" class="block px-6 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">Analisis Emosi</a>
+            <a href="dashboard.html#journal" class="block px-6 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">Jurnal</a>
+            <a href="monitoring.html" class="block px-6 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">Deteksi Wajah</a>
+            <a href="history.html" class="block px-6 py-3 text-green-600 font-semibold bg-green-100">Riwayat</a>
+            <a href="dashboard.html#settings" class="block px-6 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">Pengaturan</a>
+            <div class="px-6 py-3">
+                <button class="w-full btn-secondary text-left" id="logoutButtonMobile">Logout</button>
+            </div>
         </div>
     </nav>
 
-    <main class="flex-grow container mx-auto px-6 py-12">
-        <h1 class="text-4xl font-bold text-green-700 mb-10 text-center">Riwayat Deteksi Emosi Anda</h1>
+    <main class="flex-grow container mx-auto px-4 sm:px-6 py-10 sm:py-16">
+        <header class="mb-12 text-center">
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-green-700">Riwayat Deteksi Emosi Anda</h1>
+            <p class="mt-3 text-lg text-gray-600 max-w-2xl mx-auto">Pantau tren emosi Anda dari waktu ke waktu dan lihat log deteksi terperinci.</p>
+        </header>
 
-        <section class="mb-12">
+        <section id="charts" class="mb-16">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white shadow-xl rounded-xl p-6 border border-green-100">
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Tren Emosi Mingguan</h2>
-                    <canvas id="weeklyEmotionChart"></canvas>
+                <div class="chart-container">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-5 text-center">
+                        <i class="fas fa-chart-line mr-2 text-green-500"></i>Tren Emosi Mingguan
+                    </h2>
+                    <canvas id="weeklyEmotionChart" height="300"></canvas>
                 </div>
-
-                <div class="bg-white shadow-xl rounded-xl p-6 border border-green-100">
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Tren Emosi Bulanan</h2>
-                    <canvas id="monthlyEmotionChart"></canvas>
+                <div class="chart-container">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-5 text-center">
+                        <i class="fas fa-calendar-alt mr-2 text-green-500"></i>Tren Emosi Bulanan
+                    </h2>
+                    <canvas id="monthlyEmotionChart" height="300"></canvas>
                 </div>
             </div>
         </section>
 
-        <section class="mb-12">
-            <h2 class="text-3xl font-semibold text-gray-800 mb-6 text-center">Log Deteksi</h2>
-            <div class="bg-white shadow-xl rounded-xl overflow-hidden border border-green-100">
+        <section id="logTable" class="mb-12">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                <h2 class="text-3xl font-semibold text-gray-800 text-center sm:text-left">
+                    <i class="fas fa-clipboard-list mr-2 text-green-500"></i>Log Deteksi
+                </h2>
+                <button id="clearAllHistoryButton" class="btn-danger">
+                    <i class="fas fa-trash-alt mr-2"></i> Hapus Semua Riwayat
+                </button>
+            </div>
+            <div class="table-container">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-green-600">
+                    <table class="min-w-full divide-y divide-gray-300">
+                        <thead class="table-header-custom">
                             <tr>
-                                <th scope="col" class="py-3 px-6 text-left text-xs font-medium text-white uppercase tracking-wider">Tanggal</th>
-                                <th scope="col" class="py-3 px-6 text-left text-xs font-medium text-white uppercase tracking-wider">Waktu</th>
-                                <th scope="col" class="py-3 px-6 text-left text-xs font-medium text-white uppercase tracking-wider">Emosi Terdeteksi</th>
-                            </tr>
+                                <th scope="col">Tanggal</th>
+                                <th scope="col">Waktu</th>
+                                <th scope="col">Emosi Terdeteksi</th>
+                                <th scope="col" class="text-center">Aksi</th> </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr class="hover:bg-green-50 transition duration-150">
-                                <td class="py-4 px-6 whitespace-nowrap">2025-05-21</td>
-                                <td class="py-4 px-6 whitespace-nowrap">10:15</td>
-                                <td class="py-4 px-6 whitespace-nowrap text-green-700 font-medium">Bahagia</td>
-                            </tr>
-                            <tr class="hover:bg-green-50 transition duration-150">
-                                <td class="py-4 px-6 whitespace-nowrap">2025-05-20</td>
-                                <td class="py-4 px-6 whitespace-nowrap">14:32</td>
-                                <td class="py-4 px-6 whitespace-nowrap text-yellow-700 font-medium">Netral</td>
-                            </tr>
-                            <tr class="hover:bg-green-50 transition duration-150">
-                                <td class="py-4 px-6 whitespace-nowrap">2025-05-19</td>
-                                <td class="py-4 px-6 whitespace-nowrap">09:10</td>
-                                <td class="py-4 px-6 whitespace-nowrap text-red-700 font-medium">Sedih</td>
-                            </tr>
-                            <tr class="hover:bg-green-50 transition duration-150">
-                                <td class="py-4 px-6 whitespace-nowrap">2025-05-18</td>
-                                <td class="py-4 px-6 whitespace-nowrap">18:00</td>
-                                <td class="py-4 px-6 whitespace-nowrap text-purple-700 font-medium">Marah</td>
-                            </tr>
-                            <tr class="hover:bg-green-50 transition duration-150">
-                                <td class="py-4 px-6 whitespace-nowrap">2025-05-17</td>
-                                <td class="py-4 px-6 whitespace-nowrap">11:40</td>
-                                <td class="py-4 px-6 whitespace-nowrap text-green-700 font-medium">Senang</td>
-                            </tr>
-                            </tbody>
+                        <tbody id="logDetectionTableBody" class="bg-white divide-y divide-gray-200">
+                            <!--
+                                Konten <tbody> akan diisi oleh js/history.js.
+                                Pastikan js/history.js membuat baris (<tr>) dengan struktur berikut:
+                                <tr class="table-row-custom">
+                                    <td class="table-cell-custom">DATA_TANGGAL</td>
+                                    <td class="table-cell-custom">DATA_WAKTU</td>
+                                    <td class="table-cell-custom">
+                                        <span class="emotion-badge emotion-NAMAEMOSI">NAMA_EMOSI</span>
+                                    </td>
+                                    <td class="table-cell-custom text-center">
+                                        <button class="btn-danger delete-log-button" data-log-id="ID_LOG_UNIK">
+                                            <i class="fas fa-trash-alt mr-1"></i>Hapus
+                                        </button>
+                                    </td>
+                                </tr>
+                                Gantilah NAMAEMOSI dengan kelas yang sesuai (emotion-senang, emotion-sedih, dll.)
+                                untuk mendapatkan styling badge yang benar.
+                            -->
+                        </tbody>
                     </table>
+                </div>
+                 <div id="noHistoryMessage" class="text-center py-10 px-6 hidden"> <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                    </svg>
+                    <h3 class="mt-2 text-lg font-medium text-gray-900">Tidak Ada Riwayat Deteksi</h3>
+                    <p class="mt-1 text-sm text-gray-500">Belum ada data deteksi emosi yang tersimpan.</p>
                 </div>
             </div>
         </section>
 
     </main>
 
-    <footer class="bg-gray-900 text-white py-8">
-        <div class="container mx-auto text-center px-6">
-            <p>&copy; 2025 MoodVis. Semua Hak Cipta Dilindungi.</p>
-            <div class="mt-4 text-sm">
-                <a href="#" class="text-gray-400 hover:text-white mx-2">Kebijakan Privasi</a>
-                <span class="text-gray-400">|</span>
-                <a href="#" class="text-gray-400 hover:text-white mx-2">Syarat & Ketentuan</a>
+    <footer class="bg-gray-800 text-gray-300 py-10">
+        <div class="container mx-auto px-6 text-center">
+            <div class="mb-4">
+                <a href="dashboard.html" class="text-2xl font-bold text-white hover:text-green-400 transition-colors">MoodVis</a>
+            </div>
+            <p class="text-sm">&copy; 2025 MoodVis. Semua Hak Cipta Dilindungi.</p>
+            <div class="mt-4 text-xs space-x-2 sm:space-x-4">
+                <a href="#" class="hover:text-white transition-colors">Kebijakan Privasi</a>
+                <span class="text-gray-500 hidden sm:inline">|</span>
+                <a href="#" class="hover:text-white transition-colors">Syarat & Ketentuan</a>
+                 <span class="text-gray-500 hidden sm:inline">|</span>
+                <a href="#" class="hover:text-white transition-colors">Hubungi Kami</a>
             </div>
         </div>
     </footer>
 
-    <script type="module" src="js/script.js"></script>
+    <div id="deleteConfirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[100] hidden items-center justify-center px-4">
+        <div class="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4" id="modalTitle">Konfirmasi Hapus</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500" id="modalMessage">Apakah Anda yakin ingin menghapus item ini?</p>
+                </div>
+                <div class="mt-6 flex justify-center space-x-3">
+                    <button id="confirmDeleteButton" type="button" class="btn-danger px-6 py-2.5">
+                        Ya, Hapus
+                    </button>
+                    <button id="cancelDeleteButton" type="button" class="btn-secondary px-6 py-2.5">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="js/chart.js"></script>
+    <script type="module" src="js/history.js"></script>
+    <script type="module" src="js/constants.js"></script>
 </body>
 </html>

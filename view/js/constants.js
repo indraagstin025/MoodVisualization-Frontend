@@ -1,8 +1,12 @@
 // Frontend/view/js/constants.js
 
 export const MODEL_PATH = "/public/models"; // Path relatif dari root server Anda
-export const API_URL = "http://localhost:8000/api/detect-emotion"; // Ganti dengan URL API Lumen Anda
-export const JWT_TOKEN_KEY = "jwt_token"; // Kunci untuk menyimpan JWT di localStorage
+
+
+export const API_URL_EMOTION_RECORDS = "http://localhost:8000/api/emotion-records"; 
+export const API_URL_EMOTION_HISTORY_SUMMARY = "http://localhost:8000/api/emotion-history/summary";
+
+export const JWT_TOKEN_KEY = "jwt_token";// Kunci untuk menyimpan JWT di localStorage
 
 export const CHART_COLORS = {
     neutral: "rgba(255, 193, 7, 0.8)",

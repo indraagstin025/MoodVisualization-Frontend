@@ -47,17 +47,39 @@ export function initializeExpressionChart(ctx) {
     return expressionChartInstance;
 }
 
-// Menambahkan 'expressionChartCtx' sebagai parameter dan 'lastDetectedTimestamp'
-export function updateUI(expressionsData, dominantEmotion, emotionResultEl, expressionList, expressionChartCtx, timestampEl, saveButton, lastDetectedTimestamp) {
+// MODIFIKASI: Tambahkan parameter untuk age, gender, dan elemennya
+export function updateUI(
+    expressionsData,
+    dominantEmotion,
+    emotionResultEl,
+    expressionList,
+    expressionChartCtx,
+    timestampEl,
+    saveButton,
+    lastDetectedTimestamp,
+    // Parameter BARU untuk nilai age/gender
+    ageValue,
+    genderValue,
+    genderProbabilityValue,
+    // Parameter BARU untuk elemen DOM age/gender
+    ageResultEl,
+    genderResultEl,
+    genderProbabilityResultEl
+) {
     // Update teks emosi dominan
     if (emotionResultEl) {
         emotionResultEl.textContent = dominantEmotion.charAt(0).toUpperCase() + dominantEmotion.slice(1);
+        // Anda bisa menambahkan logika untuk mengubah warna atau kelas berdasarkan emosi jika mau
+        if (dominantEmotion === "Tidak Terdeteksi") {
+            emotionResultEl.classList.remove('text-green-700', 'animate-pulse');
+            emotionResultEl.classList.add('text-gray-500');
+        } else {
+            emotionResultEl.classList.add('text-green-700', 'animate-pulse');
+            emotionResultEl.classList.remove('text-gray-500');
+        }
     }
 
-    // Update list emosi
-    // Halaman monitoring.html Anda tidak memiliki elemen 'expressionList'.
-    // Jadi bagian ini tidak akan berpengaruh, tapi tetap aman untuk dipertahankan
-    // jika Anda menambahkannya di masa depan atau di halaman lain.
+    // Update list emosi (tetap sama)
     if (expressionList) {
         expressionList.innerHTML = "";
         Object.entries(expressionsData)
@@ -69,19 +91,15 @@ export function updateUI(expressionsData, dominantEmotion, emotionResultEl, expr
             });
     }
 
-    // Update Chart Emosi
-    // Pastikan expressionChartInstance ada dan ctx yang diteruskan cocok
+    // Update Chart Emosi (tetap sama)
     if (expressionChartInstance && expressionChartInstance.canvas === expressionChartCtx.canvas) {
         const orderedLabels = Object.keys(CHART_COLORS);
         const orderedData = orderedLabels.map(label => expressionsData[label] || 0);
-
         expressionChartInstance.data.labels = orderedLabels.map((label) => label.charAt(0).toUpperCase() + label.slice(1));
         expressionChartInstance.data.datasets[0].data = orderedData;
         expressionChartInstance.update();
-    } else {
-        // Jika instance chart belum diinisialisasi atau tidak cocok, inisialisasi ulang
+    } else if (expressionChartCtx) { // Hanya inisialisasi jika ctx ada
         initializeExpressionChart(expressionChartCtx);
-        // Kemudian perbarui datanya
         if (expressionChartInstance) {
             const orderedLabels = Object.keys(CHART_COLORS);
             const orderedData = orderedLabels.map(label => expressionsData[label] || 0);
@@ -91,27 +109,41 @@ export function updateUI(expressionsData, dominantEmotion, emotionResultEl, expr
         }
     }
 
-
-    // Update timestamp menggunakan lastDetectedTimestamp
+    // Update timestamp (tetap sama)
     if (timestampEl) {
         if (lastDetectedTimestamp) {
             const date = new Date(lastDetectedTimestamp);
             const formattedTime = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             const formattedDate = date.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' });
             timestampEl.textContent = `Terakhir terdeteksi: ${formattedDate}, ${formattedTime}`;
-            timestampEl.classList.remove('text-red-500'); // Hapus warna merah jika sebelumnya ada
-            timestampEl.classList.add('text-green-600'); // Tambahkan warna hijau untuk deteksi berhasil
+            timestampEl.classList.remove('text-red-500');
+            timestampEl.classList.add('text-green-600');
         } else {
-            // Jika belum ada deteksi sama sekali (atau saat direset)
             timestampEl.textContent = "Belum ada deteksi.";
-            timestampEl.classList.add('text-red-500'); // Tambahkan warna merah untuk status belum terdeteksi
+            timestampEl.classList.add('text-red-500');
             timestampEl.classList.remove('text-green-600');
         }
     }
 
-    // Aktifkan/nonaktifkan tombol simpan berdasarkan dominantEmotion
+    // BARU: Update UI untuk Usia dan Gender
+    if (dominantEmotion && dominantEmotion !== "Tidak Terdeteksi" && ageValue !== null && genderValue !== null) {
+        if (ageResultEl) ageResultEl.textContent = `${Math.round(ageValue)}`;
+        if (genderResultEl) genderResultEl.textContent = genderValue.charAt(0).toUpperCase() + genderValue.slice(1); // Kapitalisasi gender
+        if (genderProbabilityResultEl && genderProbabilityValue !== null) {
+            genderProbabilityResultEl.textContent = `(${(genderProbabilityValue * 100).toFixed(0)}% yakin)`;
+        } else if (genderProbabilityResultEl) {
+            genderProbabilityResultEl.textContent = '(-)';
+        }
+    } else {
+        // Jika tidak ada deteksi valid, reset tampilan usia/gender
+        if (ageResultEl) ageResultEl.textContent = "-";
+        if (genderResultEl) genderResultEl.textContent = "-";
+        if (genderProbabilityResultEl) genderProbabilityResultEl.textContent = "(-)";
+    }
+
+    // Aktifkan/nonaktifkan tombol simpan (tetap sama)
     if (saveButton) {
-        if (dominantEmotion === "Tidak Terdeteksi") {
+        if (dominantEmotion === "Tidak Terdeteksi" || Object.keys(expressionsData).length === 0) { // Tambahkan pengecekan expressionsData
             saveButton.disabled = true;
             saveButton.classList.add('opacity-50', 'cursor-not-allowed');
         } else {
@@ -121,24 +153,49 @@ export function updateUI(expressionsData, dominantEmotion, emotionResultEl, expr
     }
 }
 
-export function resetUI(emotionResultEl, expressionList, expressionChartCtx, timestampEl, saveButton, saveStatusEl) {
-    if (emotionResultEl) emotionResultEl.textContent = "Tidak Aktif";
-    if (expressionList) expressionList.innerHTML = "<li>Deteksi dihentikan</li>"; // Juga tidak akan berpengaruh
+// MODIFIKASI: Tambahkan parameter untuk elemen DOM age/gender
+export function resetUI(
+    emotionResultEl,
+    expressionList,
+    expressionChartCtx,
+    timestampEl,
+    saveButton,
+    saveStatusEl,
+    // Parameter BARU untuk elemen DOM age/gender
+    ageResultEl,
+    genderResultEl,
+    genderProbabilityResultEl
+) {
+    if (emotionResultEl) {
+        emotionResultEl.textContent = "Tidak Aktif"; // Atau "Tidak Terdeteksi"
+        emotionResultEl.classList.remove('text-green-700', 'animate-pulse');
+        emotionResultEl.classList.add('text-gray-500');
+    }
+    if (expressionList) expressionList.innerHTML = "<li>Deteksi dihentikan</li>";
     if (expressionChartCtx && expressionChartInstance) {
-        expressionChartInstance.destroy();
-        expressionChartInstance = null;
+        // Reset data chart ke 0 daripada menghancurkan dan membuat ulang
+        const zeroData = Array(expressionChartInstance.data.labels.length).fill(0);
+        expressionChartInstance.data.datasets[0].data = zeroData;
+        expressionChartInstance.update();
     }
     if (timestampEl) {
         timestampEl.textContent = "-";
-        timestampEl.classList.remove('text-green-600', 'text-red-500'); // Hapus semua warna
+        timestampEl.classList.remove('text-green-600', 'text-red-500');
     }
     if (saveButton) {
         saveButton.disabled = true;
         saveButton.classList.add('opacity-50', 'cursor-not-allowed');
     }
     if (saveStatusEl) saveStatusEl.classList.add("hidden");
+
+    // BARU: Reset UI untuk Usia dan Gender
+    if (ageResultEl) ageResultEl.textContent = "-";
+    if (genderResultEl) genderResultEl.textContent = "-";
+    if (genderProbabilityResultEl) genderProbabilityResultEl.textContent = "(-)";
 }
 
 export function clearCanvas(canvas) {
-    canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+    if (canvas && canvas.getContext) {
+        canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+    }
 }

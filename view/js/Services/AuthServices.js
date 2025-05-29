@@ -1,4 +1,4 @@
-// js/authServices.js
+// js/Services/AuthServices.js (Perbaiki path jika berbeda)
 
 const API_BASE_URL = 'http://localhost:8000'; // Sesuaikan dengan URL backend Lumen Anda
 
@@ -7,15 +7,16 @@ const API_BASE_URL = 'http://localhost:8000'; // Sesuaikan dengan URL backend Lu
  * @param {string} username
  * @param {string} email
  * @param {string} password
+ * @param {string} passwordConfirmation
  * @returns {Promise<Object>} Respons dari API
  * @throws {Error} Jika terjadi kesalahan jaringan atau respons API tidak berhasil.
  */
-export async function registerUser(username, email, password, passwordConfirmation) { // Tambahkan parameter ini
+export async function registerUser(username, email, password, passwordConfirmation) { 
     const formData = {
         username: username,
         email: email,
         password: password,
-        password_confirmation: passwordConfirmation, // Tambahkan ini
+        password_confirmation: passwordConfirmation, 
     };
 
     try {
@@ -35,17 +36,22 @@ export async function registerUser(username, email, password, passwordConfirmati
             if (result.message) {
                 errorMessage = result.message;
             } else if (result.errors) {
+                // Jika backend mengirim validasi error dalam format 'errors' object
                 errorMessage = Object.values(result.errors).flat().join('\n');
             }
             const error = new Error(errorMessage);
+            error.response = { data: result }; // Penting: Menambahkan respons server ke objek error
             error.statusCode = response.status;
             throw error;
         }
 
         return result;
     } catch (error) {
-        console.error('Error in registerUser:', error);
-        throw error;
+        console.error('Error in registerUser (AuthServices):', error);
+        // Melemparkan error asli atau error jaringan
+        const customError = new Error(error.message || 'Terjadi kesalahan jaringan.');
+        customError.originalError = error; 
+        throw customError;
     }
 }
 
@@ -56,7 +62,6 @@ export async function registerUser(username, email, password, passwordConfirmati
  * @returns {Promise<Object>} Respons dari API yang berisi token.
  * @throws {Error} Jika terjadi kesalahan jaringan atau respons API tidak berhasil.
  */
-
 export async function loginUser(email, password) {
     const formData = { email, password };
     try {
@@ -73,27 +78,23 @@ export async function loginUser(email, password) {
 
         if (!response.ok) {
             let errorMessage = 'Login gagal. Email atau password salah.';
-            if (result.message) { errorMessage = result.message; }
+            if (result.message) { 
+                errorMessage = result.message; 
+            }
             const error = new Error(errorMessage);
+            error.response = { data: result }; // Penting: Menambahkan respons server ke objek error
             error.statusCode = response.status;
             throw error;
         }
 
-        // HAPUS BAGIAN INI DARI AUTHSERVICES.JS
-        /*
-        if (result.token) {
-            localStorage.setItem('jwt_token', result.token);
-            console.log('Token disimpan di AuthServices (internal):', result.token);
-        } else {
-            console.warn('Login berhasil, tetapi properti "token" tidak ditemukan di respons dari API:', result);
-        }
-        */
-
-        console.log('Data yang dikembalikan dari API login di AuthServices:', result); // Log ini penting
-        return result; // Pastikan ini mengembalikan objek penuh dari API
+        console.log('Data yang dikembalikan dari API login di AuthServices:', result); 
+        return result; // Ini akan mengembalikan objek penuh dari API (termasuk token)
     } catch (error) {
         console.error('Error in loginUser (AuthServices):', error);
-        throw error;
+        // Melemparkan error asli atau error jaringan
+        const customError = new Error(error.message || 'Terjadi kesalahan jaringan.');
+        customError.originalError = error; 
+        throw customError;
     }
 }
 
@@ -104,8 +105,7 @@ export async function loginUser(email, password) {
 export function logoutUser() {
     localStorage.removeItem('jwt_token');
     // localStorage.removeItem('user_info'); // Hapus juga user info jika disimpan
-    // Redirect ke halaman login atau home setelah logout
-    window.location.href = 'login.html'; // Contoh redirect
+    window.location.href = 'login.html'; // Contoh redirect ke halaman login
 }
 
 /**
@@ -125,7 +125,7 @@ export async function getLoggedInUser() {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${token}` // Sertakan token di header
+                'Authorization': `Bearer ${token}` 
             },
         });
 
@@ -137,13 +137,17 @@ export async function getLoggedInUser() {
                 errorMessage = result.message;
             }
             const error = new Error(errorMessage);
+            error.response = { data: result }; // Penting: Menambahkan respons server ke objek error
             error.statusCode = response.status;
             throw error;
         }
 
         return result;
     } catch (error) {
-        console.error('Error in getLoggedInUser:', error);
-        throw error;
+        console.error('Error in getLoggedInUser (AuthServices):', error);
+        // Melemparkan error asli atau error jaringan
+        const customError = new Error(error.message || 'Terjadi kesalahan jaringan.');
+        customError.originalError = error;
+        throw customError;
     }
 }
