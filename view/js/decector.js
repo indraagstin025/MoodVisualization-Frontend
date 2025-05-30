@@ -25,7 +25,19 @@ export function setDisplaySize(width, height) {
   currentDisplaySize = { width, height };
 }
 
-export async function performDetection(video, canvas, emotionResultEl, expressionList, expressionChartCtx, timestampEl, saveButton, saveStatusEl, ageResultEl, genderResultEl, genderProbabilityResultEl) {
+export async function performDetection(
+  video,
+  canvas,
+  emotionResultEl,
+  expressionList,
+  expressionChartCtx,
+  timestampEl,
+  saveButton,
+  saveStatusEl,
+
+  genderResultEl,
+  genderProbabilityResultEl
+) {
   if (video.paused || video.ended) {
     clearCanvas(canvas);
     return null;
@@ -53,12 +65,11 @@ export async function performDetection(video, canvas, emotionResultEl, expressio
       }
     }
 
-    const age = firstDetection.age;
     const gender = firstDetection.gender;
     const genderProbability = firstDetection.genderProbability;
 
     lastDetectedEmotionData = {
-      happines_score: expressions.happy || 0,
+      happiness_score: expressions.happy || 0,
       sadness_score: expressions.sad || 0,
       anger_score: expressions.angry || 0,
       fear_score: expressions.fearful || 0,
@@ -68,7 +79,6 @@ export async function performDetection(video, canvas, emotionResultEl, expressio
       dominant_emotion: dominantEmotion,
       timestamp: new Date().toISOString(),
 
-      age: age ? Math.round(age) : null,
       gender: gender || null,
       gender_probability: genderProbability || null,
     };
@@ -84,10 +94,10 @@ export async function performDetection(video, canvas, emotionResultEl, expressio
       timestampEl,
       saveButton,
       lastDetectedEmotionData.timestamp,
-      age,
+
       gender,
       genderProbability,
-      ageResultEl,
+
       genderResultEl,
       genderProbabilityResultEl
     );
@@ -102,17 +112,19 @@ export async function performDetection(video, canvas, emotionResultEl, expressio
       expressionChartCtx,
       timestampEl,
       saveButton,
-      lastDetectedEmotionData ? lastDetectedEmotionData.timestamp : null,
+      lastDetectedEmotionData ? lastDetectedEmotionData.timestamp : new Date().toISOString(),
+
       null,
       null,
-      null,
-      ageResultEl,
+
       genderResultEl,
       genderProbabilityResultEl
     );
     clearCanvas(canvas);
 
     if (saveStatusEl) saveStatusEl.classList.add("hidden");
+    lastDetectedEmotionData = null;
+    if (saveButton) saveButton.disabled = true;
 
     return null;
   }
@@ -129,15 +141,26 @@ function drawDetectionsOnCanvas(detections, canvas) {
       lineWidth: 2,
     }).draw(canvas);
 
-    const { age, gender, genderProbability } = detection;
-    const genderText = gender.charAt(0).toUpperCase() + gender.slice(1);
-    const ageText = `${Math.round(age)} thn`;
-    const genderAgeLabel = `${genderText} (${(genderProbability * 100).toFixed(0)}%) - ${ageText}`;
-    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-    ctx.fillRect(box.x, box.y - 25, ctx.measureText(genderAgeLabel).width + 10, 25);
-    ctx.font = "16px Inter";
-    ctx.fillStyle = "white";
-    ctx.fillText(genderAgeLabel, box.x + 5, box.y - 8);
+    const { gender, genderProbability } = detection;
+
+    if (gender && genderProbability !== undefined) {
+      const genderText = gender.charAt(0).toUpperCase() + gender.slice(1);
+
+      const genderLabel = `${genderText} (${(genderProbability * 100).toFixed(0)}%)`;
+
+      const textX = box.x;
+      const textYAbove = box.y - 8;
+      const padding = 5;
+      const textMetrics = ctx.measureText(genderLabel);
+      const textWidth = textMetrics.width;
+      const textHeight = 20;
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+      ctx.fillRect(textX, box.y - textHeight - 2, textWidth + padding * 2, textHeight);
+      ctx.font = "16px Inter";
+      ctx.fillStyle = "white";
+      ctx.fillText(genderLabel, textX + padding, textYAbove);
+    }
 
     const expressions = detection.expressions;
     let dominantEmotionText = "";
@@ -151,19 +174,36 @@ function drawDetectionsOnCanvas(detections, canvas) {
 
     if (dominantEmotionText !== "") {
       const emotionLabelText = `${dominantEmotionText.charAt(0).toUpperCase() + dominantEmotionText.slice(1)} (${(maxProbabilityDisplay * 100).toFixed(0)}%)`;
-      const textY = box.y + box.height + 20;
+      const textYBelow = box.y + box.height + 20;
+
+      const padding = 5;
+      const textMetrics = ctx.measureText(emotionLabelText);
+      const textWidth = textMetrics.width;
+      const textHeight = 20;
+
       ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-      ctx.fillRect(box.x, box.y + box.height, ctx.measureText(emotionLabelText).width + 10, 25);
+      ctx.fillRect(box.x, box.y + box.height + 2, textWidth + padding * 2, textHeight);
       ctx.font = "16px Inter";
       ctx.fillStyle = "white";
-      ctx.fillText(emotionLabelText, box.x + 5, textY - 8);
+      ctx.fillText(emotionLabelText, box.x + padding, textYBelow - textHeight / 2 + 8);
     }
 
     if (detection.landmarks) {
-      faceapi.draw.drawFaceLandmarks(canvas, detection, {
+      faceapi.draw.drawFaceLandmarks(canvas, detection.landmarks, {
         drawLines: true,
-        color: "blue",
+        color: "rgba(0, 0, 255, 0.5)",
+        lineWidth: 1,
       });
+    }
+
+    if (detection.landmarks) {
+      const landmarks = detection.landmarks;
+      const drawOptions = {
+        lineWidth: 1,
+        drawLines: true,
+        color: "rgba(0, 0, 255, 0.5)",
+      };
+      faceapi.draw.drawFaceLandmarks(canvas, landmarks, drawOptions);
     }
   });
 }

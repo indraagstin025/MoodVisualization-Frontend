@@ -30,7 +30,7 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
-        .chart-container {
+        .chart-container-wrapper { /* Wrapper untuk chart dan teks summary */
             background-color: white;
             border-radius: 1rem; /* Lebih bulat */
             padding: 1.5rem; /* p-6 */
@@ -38,9 +38,13 @@
             border: 1px solid #d1fae5; /* Border hijau muda */
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .chart-container:hover {
+        .chart-container-wrapper:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .chart-canvas-container { /* Kontainer spesifik untuk canvas chart */
+            height: 300px; /* Atau sesuaikan dengan kebutuhan */
+            position: relative;
         }
         .table-container {
             background-color: white;
@@ -100,8 +104,8 @@
             border-radius: 0.5rem; /* rounded-lg */
             font-size: 0.875rem; /* text-sm */
             transition: background-color 0.3s ease;
-            line-height: 1.25rem; /* Menyamakan tinggi dengan ikon jika ada */
-            display: inline-flex; /* Agar ikon dan teks sejajar */
+            line-height: 1.25rem; 
+            display: inline-flex; 
             align-items: center;
         }
         .btn-danger:hover {
@@ -116,7 +120,7 @@
             padding-right: 1.5rem;
             text-align: left;
             font-size: 0.75rem; /* text-xs */
-            font-weight: 600; /* font-medium diganti semibold */
+            font-weight: 600; 
             text-transform: uppercase;
             letter-spacing: 0.05em; /* tracking-wider */
         }
@@ -132,22 +136,22 @@
         .table-row-custom:hover {
             background-color: #f3f4f6; /* gray-100 */
         }
-        /* Styling untuk badge emosi (jika Anda ingin memindahkannya dari JS ke CSS) */
         .emotion-badge {
-            padding: 0.25rem 0.75rem; /* px-3 py-1 */
+            padding: 0.25rem 0.75rem; 
             display: inline-flex;
-            font-size: 0.75rem; /* text-xs */
-            line-height: 1.25rem; /* leading-5 */
-            font-weight: 600; /* semibold */
-            border-radius: 9999px; /* rounded-full */
+            font-size: 0.75rem; 
+            line-height: 1.25rem; 
+            font-weight: 600; 
+            border-radius: 9999px; 
         }
-        .emotion-senang { background-color: #d1fae5; color: #065f46; } /* bg-green-100 text-green-800 */
-        .emotion-sedih { background-color: #dbeafe; color: #1e40af; } /* bg-blue-100 text-blue-800 */
-        .emotion-marah { background-color: #fee2e2; color: #991b1b; } /* bg-red-100 text-red-800 */
-        .emotion-terkejut { background-color: #fef3c7; color: #92400e; } /* bg-yellow-100 text-yellow-800 */
-        .emotion-takut { background-color: #ede9fe; color: #5b21b6; } /* bg-purple-100 text-purple-800 */
-        .emotion-netral { background-color: #e0e7ff; color: #3730a3; } /* bg-indigo-100 text-indigo-800 */
-        .emotion-default { background-color: #f3f4f6; color: #374151; } /* bg-gray-100 text-gray-800 */
+        .emotion-happy { background-color: #d1fae5; color: #065f46; } /* Sesuai face-api: happy */
+        .emotion-sad { background-color: #dbeafe; color: #1e40af; } /* Sesuai face-api: sad */
+        .emotion-angry { background-color: #fee2e2; color: #991b1b; } /* Sesuai face-api: angry */
+        .emotion-surprised { background-color: #fef3c7; color: #92400e; } /* Sesuai face-api: surprised */
+        .emotion-fearful { background-color: #ede9fe; color: #5b21b6; } /* Sesuai face-api: fearful */
+        .emotion-disgusted { background-color: #f0abfc; color: #701a75; } /* bg-fuchsia-200 text-fuchsia-800, Sesuai face-api: disgusted */
+        .emotion-neutral { background-color: #e0e7ff; color: #3730a3; } /* Sesuai face-api: neutral */
+        .emotion-default { background-color: #f3f4f6; color: #374151; }
 
     </style>
 </head>
@@ -188,19 +192,34 @@
             <p class="mt-3 text-lg text-gray-600 max-w-2xl mx-auto">Pantau tren emosi Anda dari waktu ke waktu dan lihat log deteksi terperinci.</p>
         </header>
 
-        <section id="charts" class="mb-16">
+        <section id="summaryTexts" class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div class="bg-white p-6 rounded-xl shadow-lg border border-green-200">
+                <h3 class="text-xl font-semibold text-gray-700 mb-2 text-center"><i class="fas fa-calendar-week mr-2 text-green-500"></i>Ringkasan Minggu Ini</h3>
+                <p id="weeklySummaryText" class="text-center text-lg text-gray-600 italic">Memuat ringkasan mingguan...</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-green-200">
+                <h3 class="text-xl font-semibold text-gray-700 mb-2 text-center"><i class="fas fa-calendar-day mr-2 text-green-500"></i>Ringkasan Bulan Ini</h3>
+                <p id="monthlySummaryText" class="text-center text-lg text-gray-600 italic">Memuat ringkasan bulanan...</p>
+            </div>
+        </section>
+
+        <section id="charts" class="mb-12">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="chart-container">
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-5 text-center">
-                        <i class="fas fa-chart-line mr-2 text-green-500"></i>Tren Emosi Mingguan
+                <div class="chart-container-wrapper">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4 text-center">
+                        <i class="fas fa-chart-bar mr-2 text-green-500"></i>Rata-rata Emosi Mingguan
                     </h2>
-                    <canvas id="weeklyEmotionChart" height="300"></canvas>
+                    <div class="chart-canvas-container">
+                        <canvas id="weeklyEmotionChart"></canvas>
+                    </div>
                 </div>
-                <div class="chart-container">
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-5 text-center">
-                        <i class="fas fa-calendar-alt mr-2 text-green-500"></i>Tren Emosi Bulanan
+                <div class="chart-container-wrapper">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4 text-center">
+                        <i class="fas fa-chart-pie mr-2 text-green-500"></i>Rata-rata Emosi Bulanan
                     </h2>
-                    <canvas id="monthlyEmotionChart" height="300"></canvas>
+                     <div class="chart-canvas-container">
+                        <canvas id="monthlyEmotionChart"></canvas>
+                    </div>
                 </div>
             </div>
         </section>
@@ -210,10 +229,7 @@
                 <h2 class="text-3xl font-semibold text-gray-800 text-center sm:text-left">
                     <i class="fas fa-clipboard-list mr-2 text-green-500"></i>Log Deteksi
                 </h2>
-                <button id="clearAllHistoryButton" class="btn-danger">
-                    <i class="fas fa-trash-alt mr-2"></i> Hapus Semua Riwayat
-                </button>
-            </div>
+                </div>
             <div class="table-container">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-300">
@@ -222,37 +238,24 @@
                                 <th scope="col">Tanggal</th>
                                 <th scope="col">Waktu</th>
                                 <th scope="col">Emosi Terdeteksi</th>
-                                <th scope="col" class="text-center">Aksi</th> </tr>
+                                <th scope="col" class="text-center">Aksi</th>
+                            </tr>
                         </thead>
                         <tbody id="logDetectionTableBody" class="bg-white divide-y divide-gray-200">
-                            <!--
-                                Konten <tbody> akan diisi oleh js/history.js.
-                                Pastikan js/history.js membuat baris (<tr>) dengan struktur berikut:
-                                <tr class="table-row-custom">
-                                    <td class="table-cell-custom">DATA_TANGGAL</td>
-                                    <td class="table-cell-custom">DATA_WAKTU</td>
-                                    <td class="table-cell-custom">
-                                        <span class="emotion-badge emotion-NAMAEMOSI">NAMA_EMOSI</span>
-                                    </td>
-                                    <td class="table-cell-custom text-center">
-                                        <button class="btn-danger delete-log-button" data-log-id="ID_LOG_UNIK">
-                                            <i class="fas fa-trash-alt mr-1"></i>Hapus
-                                        </button>
-                                    </td>
-                                </tr>
-                                Gantilah NAMAEMOSI dengan kelas yang sesuai (emotion-senang, emotion-sedih, dll.)
-                                untuk mendapatkan styling badge yang benar.
-                            -->
+                            <tr><td colspan="4" class="table-cell-custom text-center text-gray-500 italic">Memuat riwayat...</td></tr>
                         </tbody>
                     </table>
                 </div>
-                 <div id="noHistoryMessage" class="text-center py-10 px-6 hidden"> <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                 <div id="noHistoryMessage" class="text-center py-10 px-6 hidden"> 
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
                     </svg>
                     <h3 class="mt-2 text-lg font-medium text-gray-900">Tidak Ada Riwayat Deteksi</h3>
                     <p class="mt-1 text-sm text-gray-500">Belum ada data deteksi emosi yang tersimpan.</p>
                 </div>
             </div>
+            <div id="paginationControls" class="flex justify-center items-center mt-8 space-x-2">
+                </div>
         </section>
 
     </main>
@@ -267,7 +270,7 @@
                 <a href="#" class="hover:text-white transition-colors">Kebijakan Privasi</a>
                 <span class="text-gray-500 hidden sm:inline">|</span>
                 <a href="#" class="hover:text-white transition-colors">Syarat & Ketentuan</a>
-                 <span class="text-gray-500 hidden sm:inline">|</span>
+                <span class="text-gray-500 hidden sm:inline">|</span>
                 <a href="#" class="hover:text-white transition-colors">Hubungi Kami</a>
             </div>
         </div>
@@ -297,8 +300,8 @@
         </div>
     </div>
 
-    <script type="module" src="js/chart.js"></script>
+    <script type="module" src="js/chart.js"></script> 
     <script type="module" src="js/history.js"></script>
-    <script type="module" src="js/constants.js"></script>
+
 </body>
 </html>

@@ -1,6 +1,13 @@
 import { fetchEmotionHistory, fetchEmotionSummaryForChart, deleteEmotionRecordById } from "./Services/EmotionDetectionServices.js";
 import { CHART_COLORS, BORDER_COLORS, JWT_TOKEN_KEY } from "./constants.js";
 
+
+
+// Untuk Debugging: Cek apakah konstanta warna berhasil diimpor
+console.log("Imported CHART_COLORS:", CHART_COLORS);
+console.log("Imported BORDER_COLORS:", BORDER_COLORS);
+
+
 document.addEventListener("DOMContentLoaded", async () => {
   const logTableBody = document.getElementById("logDetectionTableBody");
   const weeklyChartCanvas = document.getElementById("weeklyEmotionChart")?.getContext("2d");
@@ -103,84 +110,104 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  function createOrUpdateAverageScoreChart(ctx, chartInstance, periodLabel, averageScoresData) {
-    if (!ctx) return null;
+// Di dalam file history.js
+
+// ... (import dan fungsi lain tetap sama) ...
+
+function createOrUpdateAverageScoreChart(ctx, chartInstance, periodLabel, averageScoresData) {
+    if (!ctx) {
+        console.error(`Canvas context tidak ditemukan untuk chart: ${periodLabel}`);
+        return null;
+    }
+    const canvas = ctx.canvas;
+
+    // Log untuk debugging
+    // console.log(`Membuat/memperbarui chart untuk: ${periodLabel}`, averageScoresData);
+    // console.log("CHART_COLORS saat digunakan:", CHART_COLORS);
+    // console.log("BORDER_COLORS saat digunakan:", BORDER_COLORS);
 
     const emotionOrder = ["happy", "sad", "angry", "fearful", "surprised", "disgusted", "neutral"];
-
     const labels = [];
     const dataPoints = [];
     const backgroundColors = [];
     const borderColors = [];
 
+    // Fallback jika CHART_COLORS atau BORDER_COLORS tidak terdefinisi
+    const safeChartColors = CHART_COLORS || {};
+    const safeBorderColors = BORDER_COLORS || {};
+
     emotionOrder.forEach((emotionKey) => {
-      const score = averageScoresData[emotionKey.toLowerCase()];
-      if (score !== undefined && score !== null) {
+        const currentAverageScores = averageScoresData || {}; // Pastikan averageScoresData adalah objek
+        const score = currentAverageScores[emotionKey.toLowerCase()];
+
         labels.push(emotionKey.charAt(0).toUpperCase() + emotionKey.slice(1));
-        dataPoints.push(score);
-        backgroundColors.push(CHART_COLORS[emotionKey.toLowerCase()] || "rgba(200, 200, 200, 0.8)");
-        borderColors.push(BORDER_COLORS[emotionKey.toLowerCase()] || "rgba(150, 150, 150, 1)");
-      }
+        dataPoints.push(score !== undefined && score !== null ? score : 0);
+
+        // Gunakan safeChartColors dan safeBorderColors
+        backgroundColors.push(safeChartColors[emotionKey.toLowerCase()] || "rgba(200, 200, 200, 0.8)");
+        borderColors.push(safeBorderColors[emotionKey.toLowerCase()] || "rgba(150, 150, 150, 1)");
     });
 
     const chartData = {
-      labels: labels,
-      datasets: [
-        {
-          label: `Rata-rata Skor Emosi (${periodLabel})`,
-          data: dataPoints,
-          backgroundColor: backgroundColors,
-          borderColor: borderColors,
-          borderWidth: 1,
-        },
-      ],
+        labels: labels,
+        datasets: [{
+            label: `Rata-rata Skor Emosi (${periodLabel})`,
+            data: dataPoints,
+            backgroundColor: backgroundColors,
+            borderColor: borderColors,
+            borderWidth: 1,
+        }],
     };
 
-    if (chartInstance) {
-      chartInstance.data = chartData;
-      chartInstance.update();
-      return chartInstance;
-    } else {
-      return new Chart(ctx, {
-        type: "bar",
-        data: chartData,
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
             y: {
-              beginAtZero: true,
-              max: 1,
-              title: { display: true, text: "Rata-rata Skor (0-1)" },
-              ticks: {
-                callback: function (value) {
-                  return (value * 100).toFixed(0) + "%";
-                },
-              },
+                beginAtZero: true, max: 1,
+                title: { display: true, text: "Rata-rata Skor (0-1)" },
+                ticks: { callback: function (value) { return (value * 100).toFixed(0) + "%"; } },
             },
             x: { title: { display: true, text: "Emosi" } },
-          },
-          plugins: {
-            legend: { display: true, position: "top" },
-            tooltip: {
-              callbacks: {
-                label: function (context) {
-                  let label = context.dataset.label || "";
-                  if (label) {
-                    label += ": ";
-                  }
-                  if (context.parsed.y !== null) {
-                    label += (context.parsed.y * 100).toFixed(2) + "%";
-                  }
-                  return label;
-                },
-              },
-            },
-          },
         },
-      });
+        plugins: {
+            legend: { display: true, position: "top" },
+            title: { display: true, text: `Rata-rata Emosi ${periodLabel}`, font: { size: 16 }},
+            tooltip: {
+                callbacks: {
+                    label: function (context) {
+                        let label = context.dataset.label || "Skor";
+                        if (label.includes(`(${periodLabel})`)) {
+                           label = "Rata-rata Skor";
+                        }
+                        if (label) label += ": ";
+                        if (context.parsed.y !== null) {
+                            label += (context.parsed.y * 100).toFixed(2) + "%";
+                        }
+                        return label;
+                    },
+                },
+            },
+        },
+    };
+
+    if (chartInstance && chartInstance.canvas === canvas) {
+        chartInstance.data = chartData;
+        chartInstance.options = chartOptions;
+        chartInstance.update();
+        return chartInstance;
+    } else {
+        const existingChartOnCanvas = Chart.getChart(canvas);
+        if (existingChartOnCanvas) {
+            existingChartOnCanvas.destroy();
+        }
+        return new Chart(ctx, {
+            type: "bar",
+            data: chartData,
+            options: chartOptions,
+        });
     }
-  }
+}
 
   function renderPaginationControls(paginationData) {
     if (!paginationControlsEl || !paginationData) return;

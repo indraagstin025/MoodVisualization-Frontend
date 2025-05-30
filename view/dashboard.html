@@ -7,13 +7,14 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       /* Mengatur font global */
       body {
         font-family: "Inter", sans-serif;
       }
     </style>
-      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body class="font-inter antialiased bg-green-50 text-gray-800 min-h-screen flex flex-col">
     <nav class="bg-white shadow-sm p-4 sticky top-0 z-50">
@@ -40,25 +41,27 @@
     </nav>
 
     <main class="flex-grow container mx-auto px-6 py-12">
-      <h1 class="text-4xl font-bold text-green-700 mb-10">Halo, [Nama Pengguna]! Selamat Datang di Dashboard Anda.</h1>
+      <h1 id="mainWelcomeHeading" class="text-4xl font-bold text-green-700 mb-10">Halo, [Nama Pengguna]! Selamat Datang di Dashboard Anda.</h1>
 
       <section id="overview" class="mb-12">
-        <h2 class="text-3xl font-semibold text-gray-800 mb-6">Ringkasan Suasana Hati Anda</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div class="bg-white p-6 rounded-lg shadow-md border border-green-100 text-center">
-            <p class="text-lg text-gray-600 mb-2">Emosi Dominan Hari Ini:</p>
-            <p class="text-4xl font-bold text-green-600">Bahagia 😊</p>
-            <p class="text-sm text-gray-500 mt-2">Terakhir diperbarui: 20 Mei 2025</p>
+        <h2 class="text-3xl font-semibold text-gray-800 mb-6 text-center md:text-left">Ringkasan Suasana Hati Anda</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 text-center transform hover:scale-105 transition-transform duration-300">
+            <p class="text-lg text-gray-500 mb-2">Emosi Dominan Hari Ini</p>
+            <p id="todayDominantEmotionText" class="text-4xl font-bold text-green-600">- <span id="todayDominantEmotionEmoji"></span></p>
+            <p id="todayLastUpdated" class="text-sm text-gray-400 mt-2">Memuat...</p>
           </div>
-          <div class="bg-white p-6 rounded-lg shadow-md border border-green-100 text-center">
-            <p class="text-lg text-gray-600 mb-2">Rata-rata Mood Mingguan:</p>
-            <p class="text-4xl font-bold text-yellow-600">Netral 😐</p>
-            <p class="text-sm text-gray-500 mt-2">Sedikit fluktuatif</p>
+
+          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 text-center transform hover:scale-105 transition-transform duration-300">
+            <p class="text-lg text-gray-500 mb-2">Rata-rata Mood Minggu Ini</p>
+            <p id="weeklyAverageMoodText" class="text-4xl font-bold text-yellow-600">- <span id="weeklyAverageMoodEmoji"></span></p>
+            <p id="weeklyMoodDescription" class="text-sm text-gray-400 mt-2">Memuat...</p>
           </div>
-          <div class="bg-white p-6 rounded-lg shadow-md border border-green-100 text-center">
-            <p class="text-lg text-gray-600 mb-2">Total Entri Jurnal:</p>
-            <p class="text-4xl font-bold text-blue-600">45</p>
-            <p class="text-sm text-gray-500 mt-2">Teruslah menulis!</p>
+
+          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 text-center transform hover:scale-105 transition-transform duration-300">
+            <p class="text-lg text-gray-500 mb-2">Total Entri Jurnal</p>
+            <p id="totalJournalEntries" class="text-4xl font-bold text-blue-600">-</p>
+            <p class="text-sm text-gray-400 mt-2">Teruslah menulis!</p>
           </div>
         </div>
       </section>
@@ -107,17 +110,26 @@
         </a>
       </section>
 
-      <section id="analysis" class="mb-12">
-        <h2 class="text-3xl font-semibold text-gray-800 mb-6">Analisis Emosi Mendalam</h2>
-        <div class="bg-white p-8 rounded-lg shadow-md border border-green-100">
-          <h3 class="text-2xl font-semibold mb-4 text-gray-700">Tren Emosi Mingguan</h3>
-          <div class="h-64 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 border border-dashed border-gray-300">
-            <p>Grafik Tren Emosi akan ditampilkan di sini</p>
+<section id="analysis" class="mb-12">
+        <h2 class="text-3xl font-semibold text-gray-800 mb-8 text-center md:text-left">Analisis Emosi Mendalam</h2>
+        <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-gray-200">
+          
+          <div class="mb-10">
+            <h3 class="text-2xl font-semibold mb-2 text-gray-700"><i class="fas fa-chart-line mr-2 text-green-500"></i>Tren Frekuensi Emosi (7 Hari)</h3>
+            <div class="h-72 md:h-80 bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <canvas id="dashboardWeeklyTrendChart"></canvas> 
+            </div>
           </div>
-          <h3 class="text-2xl font-semibold mt-8 mb-4 text-gray-700">Distribusi Emosi</h3>
-          <div class="h-64 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 border border-dashed border-gray-300">
-            <p>Diagram Distribusi Emosi akan ditampilkan di sini</p>
+
+          <div>
+            <h3 class="text-2xl font-semibold mt-8 mb-4 text-gray-700"><i class="fas fa-chart-pie mr-2 text-blue-500"></i>Distribusi Emosi (7 Hari)</h3>
+            <div id="dashboardDistributionContainer" class="h-72 md:h-80 bg-gray-100 p-4 rounded-lg border border-gray-200 flex flex-col justify-center items-center text-gray-500">
+              <div class="w-full h-full max-w-md">
+                <canvas id="dashboardEmotionDistributionChart"></canvas>
+              </div>
+            </div>
           </div>
+
         </div>
       </section>
 
@@ -164,10 +176,7 @@
       </div>
     </footer>
 
- 
     <script type="module" src="js/dashboard.js"></script>
-
-
- 
+    <script type="module" src="js/constants.js"></script>
   </body>
 </html>
