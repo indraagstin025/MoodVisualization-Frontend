@@ -1,11 +1,13 @@
 import { logoutUser, getLoggedInUser } from "./Services/AuthServices.js";
 import { fetchEmotionFrequencyTrend, fetchEmotionSummaryForChart } from "./Services/EmotionDetectionServices.js";
-import { CHART_COLORS, BORDER_COLORS, JWT_TOKEN_KEY } from "./constants.js";
+import { CHART_COLORS, BORDER_COLORS } from "./constants.js"; // JWT_TOKEN_KEY tidak digunakan secara langsung di sini, mungkin di AuthServices
 
-let overviewWeeklyAverageChartInstance = null;
+// Variabel untuk menyimpan instance chart
+let overviewWeeklyAverageChartInstance = null; // Belum ada fungsi yang menggunakan ini di kode yang diberikan
 let analysisWeeklyTrendChartInstance = null;
 let analysisEmotionDistributionChartInstance = null;
 
+// Fungsi utilitas (tidak ada perubahan di sini, sudah baik)
 function getFormattedDate(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -26,6 +28,7 @@ const emotionToEmojiMap = {
   fearful: "😨",
   disgusted: "🤢",
   neutral: "😐",
+  "tidak ada deteksi": "🚫", // Menambahkan variasi untuk "Tidak Ada Deteksi"
   "tidak ada data": "❓",
   "tidak ada data skor": "❓",
   default: "🤔",
@@ -44,8 +47,7 @@ function drawTextOnCanvas(canvasId, message, color = "#6b7280", fontSize = "16px
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ctx.font = `${fontSize} Inter, sans-serif`;
+  ctx.font = `${fontSize} Inter, sans-serif`; // Pastikan font Inter dimuat
   ctx.fillStyle = color;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
@@ -61,7 +63,9 @@ function drawTextOnCanvas(canvasId, message, color = "#6b7280", fontSize = "16px
   });
 }
 
+// Fungsi rendering chart (tidak ada perubahan signifikan di sini, sudah baik)
 function renderAverageScoreBarChart(canvasId, averageScoresData, chartTitle, existingChartInstance) {
+  // ... (kode renderAverageScoreBarChart Anda)
   const canvas = document.getElementById(canvasId);
   if (!canvas) {
     console.warn(`Canvas element with id '${canvasId}' not found for AverageScoreBarChart.`);
@@ -96,6 +100,7 @@ function renderAverageScoreBarChart(canvasId, averageScoresData, chartTitle, exi
 }
 
 function renderFrequencyTrendLineChart(canvasId, apiChartJsData, existingChartInstance) {
+  // ... (kode renderFrequencyTrendLineChart Anda)
   const canvas = document.getElementById(canvasId);
   if (!canvas) {
     console.warn(`Canvas element with id '${canvasId}' not found for FrequencyTrendLineChart.`);
@@ -135,6 +140,7 @@ function renderFrequencyTrendLineChart(canvasId, apiChartJsData, existingChartIn
 }
 
 function renderEmotionDistributionDoughnutChart(canvasId, aggregatedData, existingChartInstance) {
+  // ... (kode renderEmotionDistributionDoughnutChart Anda)
   const canvas = document.getElementById(canvasId);
   if (!canvas) {
     console.warn(`Canvas element with id '${canvasId}' not found for EmotionDistributionDoughnutChart.`);
@@ -181,7 +187,9 @@ function renderEmotionDistributionDoughnutChart(canvasId, aggregatedData, existi
   }
 }
 
+// Fungsi pemuatan data (tidak ada perubahan signifikan di sini, sudah baik)
 async function loadOverviewData() {
+  // ... (kode loadOverviewData Anda)
   const todayDominantEmotionTextEl = document.getElementById("todayDominantEmotionText");
   const todayLastUpdatedEl = document.getElementById("todayLastUpdated");
   const weeklyAverageMoodTextEl = document.getElementById("weeklyAverageMoodText");
@@ -242,11 +250,13 @@ async function loadOverviewData() {
 
   const totalJournalEntriesEl = document.getElementById("totalJournalEntries");
   if (totalJournalEntriesEl) {
+    // TODO: Implementasikan pengambilan data total entri jurnal jika diperlukan
     totalJournalEntriesEl.textContent = "N/A";
   }
 }
 
 async function loadAnalysisCharts() {
+  // ... (kode loadAnalysisCharts Anda)
   const today = new Date();
   const endDate = getFormattedDate(today);
   const startDateSevenDaysAgo = getFormattedDate(new Date(new Date().setDate(today.getDate() - 6)));
@@ -267,6 +277,7 @@ async function loadAnalysisCharts() {
       let hasAnyDataForDistribution = false;
       if (trendData.chartJsFormat.datasets && trendData.chartJsFormat.datasets.length > 0) {
         trendData.chartJsFormat.datasets.forEach((dataset) => {
+          // Inisialisasi semua label emosi yang ada di dataset
           emotionTotals[dataset.label.toLowerCase()] = 0;
         });
         trendData.chartJsFormat.datasets.forEach((dataset) => {
@@ -277,12 +288,12 @@ async function loadAnalysisCharts() {
 
         const filteredEmotionTotals = {};
         for (const emotion in emotionTotals) {
-          if (emotionTotals[emotion] > 0) {
+          if (emotionTotals[emotion] > 0) { // Hanya tampilkan emosi yang ada datanya
             filteredEmotionTotals[emotion] = emotionTotals[emotion];
           }
         }
-
-        if (hasAnyDataForDistribution) {
+        
+        if (Object.keys(filteredEmotionTotals).length > 0) { // Cek apakah ada data setelah difilter
           analysisEmotionDistributionChartInstance = renderEmotionDistributionDoughnutChart(distributionCanvasId, filteredEmotionTotals, analysisEmotionDistributionChartInstance);
         } else {
           drawTextOnCanvas(distributionCanvasId, "Tidak ada data untuk distribusi emosi.");
@@ -301,53 +312,17 @@ async function loadAnalysisCharts() {
   }
 }
 
+
+// --- REVISI BAGIAN DOMContentLoaded ---
 document.addEventListener("DOMContentLoaded", async function () {
-  console.log("Dashboard script dimuat.");
+  console.log("Skrip utama (main script) dimuat."); // Pesan yang lebih umum
 
-  const welcomeHeading = document.getElementById("mainWelcomeHeading") || document.querySelector("h1");
-  if (welcomeHeading) {
-    try {
-      const apiResponse = await getLoggedInUser();
-      console.log("Data pengguna diterima dari API:", apiResponse);
-
-      if (apiResponse && apiResponse.user && apiResponse.user.username) {
-        const username = apiResponse.user.username;
-        console.log("Username ditemukan:", username);
-
-        welcomeHeading.textContent = `Halo, ${username}! Selamat Datang di Dashboard Anda.`;
-      } else {
-        console.log("Username tidak ditemukan di data pengguna (apiResponse.user.username), menggunakan default.");
-        welcomeHeading.textContent = `Halo, Pengguna MoodVis! Selamat Datang di Dashboard Anda.`;
-      }
-    } catch (error) {
-      console.error("Gagal mengambil data pengguna:", error);
-      if (welcomeHeading) {
-        welcomeHeading.textContent = `Halo, Pengguna MoodVis! Selamat Datang di Dashboard Anda.`;
-      }
-
-      const errorMessage = String(error.message || error).toLowerCase();
-      if (errorMessage.includes("401") || errorMessage.includes("unauthorized") || errorMessage.includes("tidak ada token") || errorMessage.includes("token jwt tidak ditemukan")) {
-        Swal.fire({
-          title: "Sesi Berakhir",
-          text: "Sesi Anda telah berakhir atau tidak valid. Silakan login kembali.",
-          icon: "warning",
-          confirmButtonText: "Login Ulang",
-          allowOutsideClick: false,
-          willClose: () => {
-            logoutUser();
-          },
-        });
-      }
-    }
-  } else {
-    console.warn("Elemen untuk welcome heading (misalnya, ID 'mainWelcomeHeading') tidak ditemukan.");
-  }
-
-  loadOverviewData();
-  loadAnalysisCharts();
-
+  // --- Fungsionalitas Umum (berjalan di semua halaman yang memuat skrip ini) ---
   const logoutButton = document.getElementById("logoutButton");
   const logoutButtonMobile = document.getElementById("logoutButtonMobile");
+  // Pertimbangkan untuk menambahkan ID lain jika tombol logout ada di halaman lain dengan ID berbeda
+  // const logoutButtonNav = document.getElementById("logoutButtonNav"); // Contoh
+
   const mobileMenuButton = document.getElementById("mobileMenuButton");
   const mobileMenuEl = document.getElementById("mobileMenu");
 
@@ -357,46 +332,114 @@ document.addEventListener("DOMContentLoaded", async function () {
       text: "Anda akan keluar dari sesi ini.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#10B981",
-      cancelButtonColor: "#EF4444",
+      confirmButtonColor: "#10B981", // Sesuai dengan kode Anda
+      cancelButtonColor: "#EF4444", // Sesuai dengan kode Anda
       confirmButtonText: "Ya, Logout!",
       cancelButtonText: "Batal",
     }).then((result) => {
       if (result.isConfirmed) {
-        logoutUser();
+        logoutUser(); // Pastikan fungsi logoutUser() dari AuthServices.js sudah diimpor dan bekerja
       }
     });
   }
 
-  if (logoutButton) logoutButton.addEventListener("click", showLogoutConfirmation);
+  if (logoutButton) {
+    logoutButton.addEventListener("click", showLogoutConfirmation);
+  }
   if (logoutButtonMobile) {
     logoutButtonMobile.addEventListener("click", function () {
-      if (mobileMenuEl) mobileMenuEl.classList.add("hidden");
+      if (mobileMenuEl && !mobileMenuEl.classList.contains("hidden")) {
+        mobileMenuEl.classList.add("hidden");
+      }
       showLogoutConfirmation();
     });
   }
+  // if (logoutButtonNav) logoutButtonNav.addEventListener("click", showLogoutConfirmation); // Contoh
+
   if (mobileMenuButton && mobileMenuEl) {
     mobileMenuButton.addEventListener("click", () => {
       mobileMenuEl.classList.toggle("hidden");
     });
   }
+
   document.querySelectorAll("nav a, #mobileMenu a").forEach((anchor) => {
     anchor.addEventListener("click", function (e) {
       const href = this.getAttribute("href");
+      const isLogoutButtonInsideMenu = this.id === 'logoutButtonMobile'; // Sesuaikan jika ada ID lain untuk tombol logout di menu
+
+      if (isLogoutButtonInsideMenu) {
+        // Biarkan handler logout yang sudah ada menangani ini
+        return;
+      }
+
       if (href && href.startsWith("#") && this.hostname === window.location.hostname && this.pathname === window.location.pathname) {
         e.preventDefault();
         const targetElement = document.querySelector(href);
         if (targetElement) {
-          window.scrollTo({ top: targetElement.offsetTop - 70, behavior: "smooth" });
+          window.scrollTo({ top: targetElement.offsetTop - 70, behavior: "smooth" }); // 70 adalah offset navbar
           if (mobileMenuEl && !mobileMenuEl.classList.contains("hidden")) {
             mobileMenuEl.classList.add("hidden");
           }
         }
       } else if (href && !href.startsWith("#")) {
+        // Untuk link ke halaman lain
         if (mobileMenuEl && !mobileMenuEl.classList.contains("hidden")) {
           mobileMenuEl.classList.add("hidden");
         }
+        // Navigasi akan dilanjutkan secara default oleh browser
       }
     });
   });
+
+  // --- Fungsionalitas Khusus Dashboard ---
+  // Ganti "dashboard.html" dengan nama file dashboard Anda yang sebenarnya jika berbeda (misalnya, "dashboard_updated.html")
+  const dashboardPageFilename = "dashboard.html"; 
+
+  if (window.location.pathname.includes(dashboardPageFilename)) {
+    console.log("Menjalankan skrip khusus untuk halaman dashboard.");
+
+    const welcomeHeading = document.getElementById("mainWelcomeHeading"); // Lebih spesifik, tanpa fallback ke "h1" umum
+    if (welcomeHeading) {
+      try {
+        const apiResponse = await getLoggedInUser(); // Dari AuthServices.js
+        console.log("Data pengguna diterima dari API:", apiResponse);
+
+        if (apiResponse && apiResponse.user && apiResponse.user.username) {
+          const username = apiResponse.user.username;
+          console.log("Username ditemukan:", username);
+          welcomeHeading.textContent = `Halo, ${username}! Selamat Datang di Dashboard Anda.`;
+        } else {
+          console.log("Username tidak ditemukan di data pengguna (apiResponse.user.username), menggunakan default.");
+          welcomeHeading.textContent = `Halo, Pengguna MoodVis! Selamat Datang di Dashboard Anda.`;
+        }
+      } catch (error) {
+        console.error("Gagal mengambil data pengguna:", error);
+        // Cek ulang elemen sebelum mengubah teks, untuk keamanan
+        const currentWelcomeHeading = document.getElementById("mainWelcomeHeading");
+        if (currentWelcomeHeading) {
+            currentWelcomeHeading.textContent = `Halo, Pengguna MoodVis! Selamat Datang di Dashboard Anda.`;
+        }
+
+        const errorMessage = String(error.message || error).toLowerCase();
+        if (errorMessage.includes("401") || errorMessage.includes("unauthorized") || errorMessage.includes("tidak ada token") || errorMessage.includes("token jwt tidak ditemukan")) {
+          Swal.fire({
+            title: "Sesi Berakhir",
+            text: "Sesi Anda telah berakhir atau tidak valid. Silakan login kembali.",
+            icon: "warning",
+            confirmButtonText: "Login Ulang",
+            allowOutsideClick: false,
+            willClose: () => {
+              logoutUser(); // Dari AuthServices.js
+            },
+          });
+        }
+      }
+    } else {
+      console.warn("Elemen ID 'mainWelcomeHeading' tidak ditemukan di halaman dashboard ini.");
+    }
+
+    // Panggil fungsi-fungsi yang spesifik untuk dashboard
+    loadOverviewData();
+    loadAnalysisCharts();
+  }
 });

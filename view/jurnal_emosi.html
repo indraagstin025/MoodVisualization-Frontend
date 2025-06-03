@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MoodVis - Jurnal Emosi Anda</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/Auth/AuthGuard.js"></script>
+  </head>
+  <body class="font-inter antialiased bg-green-50 text-gray-800 min-h-screen flex flex-col">
+    <nav class="bg-white shadow-sm p-4 sticky top-0 z-50">
+      <div class="container mx-auto flex justify-between items-center">
+        <a href="dashboard_updated.html" class="text-3xl font-extrabold text-green-600">MoodVis</a>
+        <div class="space-x-6 hidden md:block">
+          <a href="dashboard.html" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Halaman Utama</a>
+          <a href="monitoring.html" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Deteksi Emosi</a>
+          <a href="jurnal_emosi.html" class="text-green-600 font-semibold transition duration-200">Jurnal Emosi</a>
+          <a href="dashboard.html#settings" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Pengaturan</a>
+          <button id="logoutButtonNav" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300 shadow-md">Logout</button>
+        </div>
+        <button id="mobileMenuButton" class="md:hidden text-gray-700 focus:outline-none">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+      </div>
+      <div id="mobileMenu" class="md:hidden hidden absolute top-16 left-0 right-0 bg-white shadow-lg py-4 z-50">
+        <a href="dashboard.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Halaman Utama</a>
+        <a href="dashboard.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Analisis Emosi</a>
+        <a href="jurnal_emosi.html" class="block px-4 py-2 text-green-600 bg-gray-100">Jurnal Emosi</a>
+        <a href="dashboard.html#settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Pengaturan</a>
+        <button class="w-full text-left bg-gray-200 text-gray-700 px-4 py-2 mt-2 rounded-lg hover:bg-gray-300 transition duration-300" id="logoutButtonMobileNav">Logout</button>
+      </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto px-6 py-12">
+      <h1 class="text-4xl font-bold text-green-700 mb-10">Jurnal Emosi Anda</h1>
+
+      <section class="mb-12 bg-white p-8 rounded-xl shadow-lg border border-green-100">
+        <h2 class="text-3xl font-semibold text-gray-800 mb-6">Bagaimana Perasaan Anda Saat Ini?</h2>
+        <form id="emotionJournalForm" class="space-y-6">
+          <div>
+            <label for="emotionInput" class="block mb-2 text-gray-700 font-medium text-lg">Tuliskan perasaan atau pengalaman Anda hari ini:</label>
+            <textarea
+              id="emotionInput"
+              rows="5"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200 text-base"
+              placeholder="Contoh: Saya merasa senang hari ini karena berhasil menyelesaikan tugas penting dan mendapat apresiasi dari rekan kerja. Cuaca juga cerah, membuat suasana hati semakin baik."
+            ></textarea>
+          </div>
+          <div>
+            <label for="emotionSelector" class="block mb-2 text-gray-700 font-medium text-lg">Pilih emosi yang paling dominan:</label>
+            <select id="emotionSelector" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200 bg-white text-base">
+                <option value="bahagia">😊 Bahagia</option>
+                <option value="senang">🙂 Senang</option>
+                <option value="netral">😐 Netral</option>
+                <option value="sedih">😢 Sedih</option>
+                <option value="marah">😠 Marah</option>
+                <option value="takut">😨 Takut</option>
+                <option value="terkejut">😮 Terkejut</option>
+                <option value="cemas">😟 Cemas</option>
+                <option value="kecewa">😞 Kecewa</option>
+                <option value="lainnya">🤔 Lainnya (jelaskan di catatan)</option>
+            </select>
+          </div>
+          <button type="submit" class="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-300 shadow-md transform hover:scale-105 text-lg">
+            Simpan Entri Jurnal
+          </button>
+        </form>
+      </section>
+
+      <section id="journalEntries" class="mb-12">
+        <h2 class="text-3xl font-semibold text-gray-800 mb-6">Entri Jurnal Terakhir</h2>
+        <div class="bg-white p-8 rounded-xl shadow-lg border border-green-100">
+          <div id="journalList" class="space-y-6">
+            <div class="journal-item border-b pb-4 border-gray-200 last:border-b-0 last:pb-0">
+              <div class="flex justify-between items-center mb-1">
+                <p class="text-sm text-gray-500">
+                  <span class="journal-date">2 Juni 2025, 08:00 WIB</span> - 
+                  <span class="journal-emotion font-semibold text-green-600">Bahagia 😊</span>
+                </p>
+                <button class="delete-entry-button text-red-500 hover:text-red-700 text-sm" data-id="sample1">Hapus</button>
+              </div>
+              <p class="journal-text text-gray-700">"Sangat bersyukur hari ini karena berhasil menyelesaikan proyek tepat waktu. Rasanya lega sekali!"</p>
+            </div>
+            <div class="journal-item border-b pb-4 border-gray-200 last:border-b-0 last:pb-0">
+              <div class="flex justify-between items-center mb-1">
+                <p class="text-sm text-gray-500">
+                  <span class="journal-date">1 Juni 2025, 17:30 WIB</span> - 
+                  <span class="journal-emotion font-semibold text-yellow-600">Netral 😐</span>
+                </p>
+                <button class="delete-entry-button text-red-500 hover:text-red-700 text-sm" data-id="sample2">Hapus</button>
+              </div>
+              <p class="journal-text text-gray-700">"Hari yang cukup sibuk dengan banyak rapat, tidak ada yang istimewa. Hanya pekerjaan rutin."</p>
+            </div>
+             </div>
+          <div id="noEntriesMessage" class="text-center text-gray-500 py-8 hidden">
+            <p class="text-xl">Belum ada entri jurnal.</p>
+            <p>Mulailah menulis untuk mencatat perjalanan emosi Anda!</p>
+          </div>
+          <div class="text-center mt-8">
+            </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bg-gray-900 text-white py-8">
+      <div class="container mx-auto text-center px-6">
+        <p>&copy; 2025 MoodVis. Semua Hak Cipta Dilindungi.</p>
+        <div class="mt-4 text-sm">
+          <a href="#" class="text-gray-400 hover:text-white mx-2">Kebijakan Privasi</a>
+          <span class="text-gray-400">|</span>
+          <a href="#" class="text-gray-400 hover:text-white mx-2">Syarat & Ketentuan</a>
+        </div>
+      </div>
+    </footer>
+        <script type="module" src="js/dashboard.js"></script>
+    </body>
+</html>

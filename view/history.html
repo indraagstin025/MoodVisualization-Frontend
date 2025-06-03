@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/Auth/AuthGuard.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -161,8 +162,7 @@
         <div class="container mx-auto px-6 py-3 flex justify-between items-center">
             <a href="dashboard.html" class="text-4xl font-extrabold text-green-600 hover:text-green-700 transition-colors">MoodVis</a>
             <div class="hidden md:flex items-center space-x-2">
-                <a href="dashboard.html#overview" class="nav-link">Ringkasan</a>
-                <a href="dashboard.html#analysis" class="nav-link">Analisis Emosi</a>
+                <a href="dashboard.html" class="nav-link">Halaman Utama</a>
                 <a href="dashboard.html#journal" class="nav-link">Jurnal</a>
                 <a href="monitoring.html" class="nav-link">Deteksi Wajah</a>
                 <a href="history.html" class="nav-link-active">Riwayat</a>
@@ -174,7 +174,7 @@
             </button>
         </div>
         <div id="mobileMenu" class="md:hidden hidden bg-white shadow-xl absolute top-full left-0 right-0 z-40 py-2">
-            <a href="dashboard.html#overview" class="block px-6 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">Ringkasan</a>
+            <a href="dashboard.html" class="block px-6 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">Halaman Utama</a>
             <a href="dashboard.html#analysis" class="block px-6 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">Analisis Emosi</a>
             <a href="dashboard.html#journal" class="block px-6 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">Jurnal</a>
             <a href="monitoring.html" class="block px-6 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">Deteksi Wajah</a>

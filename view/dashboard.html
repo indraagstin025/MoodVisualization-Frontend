@@ -6,12 +6,20 @@
     <title>MoodVis - Dashboard Anda</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/style.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/Auth/AuthGuard.js"></script>
     <style>
       /* Mengatur font global */
       body {
         font-family: "Inter", sans-serif;
+      }
+      /* Styling tambahan untuk card pintasan (jika masih ada yang menggunakan kelas ini) */
+      .shortcut-card {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+      }
+      .shortcut-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
       }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -21,9 +29,8 @@
       <div class="container mx-auto flex justify-between items-center">
         <a href="dashboard.html" class="text-3xl font-extrabold text-green-600">MoodVis</a>
         <div class="space-x-6 hidden md:block">
-          <a href="#overview" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Ringkasan</a>
-          <a href="#analysis" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Analisis Emosi</a>
-          <a href="#journal" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Jurnal</a>
+          <a href="monitoring.html" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Deteksi Emosi</a>
+          <a href="jurnal_emosi.html" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Jurnal Emosi</a>
           <a href="#settings" class="text-gray-700 hover:text-green-600 font-medium transition duration-200">Pengaturan</a>
           <button id="logoutButton" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300 shadow-md">Logout</button>
         </div>
@@ -32,9 +39,8 @@
         </button>
       </div>
       <div id="mobileMenu" class="md:hidden hidden absolute top-16 left-0 right-0 bg-white shadow-lg py-4 z-50">
-        <a href="#overview" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Ringkasan</a>
-        <a href="#analysis" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Analisis Emosi</a>
-        <a href="#journal" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Jurnal</a>
+        <a href="monitoring.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Deteksi Emosi</a>
+        <a href="jurnal_emosi.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Jurnal Emosi</a>
         <a href="#settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Pengaturan</a>
         <button class="w-full text-left bg-gray-200 text-gray-700 px-4 py-2 mt-2 rounded-lg hover:bg-gray-300 transition duration-300" id="logoutButtonMobile">Logout</button>
       </div>
@@ -66,58 +72,57 @@
         </div>
       </section>
 
-      <section class="mb-12 bg-white p-8 rounded-lg shadow-md border border-green-100">
-        <h2 class="text-3xl font-semibold text-gray-800 mb-6">Bagaimana Perasaan Anda Saat Ini?</h2>
-        <form class="space-y-4">
-          <div>
-            <label for="emotionInput" class="block mb-2 text-gray-700 font-medium">Tuliskan perasaan Anda:</label>
-            <textarea
-              id="emotionInput"
-              rows="4"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-              placeholder="Saya merasa senang hari ini karena..."
-            ></textarea>
-          </div>
-          <button type="submit" class="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-300 shadow-md transform hover:scale-105">Deteksi & Simpan Emosi</button>
-        </form>
-      </section>
-
-      <section class="mb-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-        <a href="monitoring.html" class="block">
-          <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-8 rounded-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer h-full flex flex-col justify-center">
-            <div class="flex items-center space-x-6">
-              <div class="text-6xl">📸</div>
-              <div>
-                <h2 class="text-3xl font-bold mb-2">Mulai Deteksi Emosi Wajah Anda</h2>
-                <p class="text-lg opacity-90">Gunakan webcam Anda untuk menganalisis ekspresi dan memahami mood Anda secara real-time.</p>
-                <span class="mt-4 inline-block bg-white text-green-700 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition duration-300 shadow-md">Deteksi Sekarang →</span>
+      <section class="mb-12">
+        <h2 class="text-3xl font-semibold text-gray-800 mb-6 text-center md:text-left">Akses Cepat</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <a href="jurnal_emosi.html" class="block">
+            <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-8 rounded-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer h-full flex flex-col justify-center">
+              <div class="flex items-center space-x-6">
+                <div class="text-6xl">📝</div>
+                <div>
+                  <h2 class="text-3xl font-bold mb-2">Jurnal Emosi Anda</h2>
+                  <p class="text-lg opacity-90">Catat perasaan Anda dan lihat entri jurnal terakhir.</p>
+                  <span class="mt-4 inline-block bg-white text-purple-700 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition duration-300 shadow-md">Buka Jurnal →</span>
+                </div>
               </div>
             </div>
-          </div>
-        </a>
+          </a>
 
-        <a href="history.html" class="block">
-          <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-8 rounded-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer h-full flex flex-col justify-center">
-            <div class="flex items-center space-x-6">
-              <div class="text-6xl">📈</div>
-              <div>
-                <h2 class="text-3xl font-bold mb-2">Lihat Riwayat & Analisis</h2>
-                <p class="text-lg opacity-90">Jelajahi grafik dan log deteksi emosi Anda dari waktu ke waktu untuk melihat tren.</p>
-                <span class="mt-4 inline-block bg-white text-blue-700 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition duration-300 shadow-md">Lihat Riwayat →</span>
+          <a href="monitoring.html" class="block">
+            <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-8 rounded-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer h-full flex flex-col justify-center">
+              <div class="flex items-center space-x-6">
+                <div class="text-6xl">📸</div>
+                <div>
+                  <h2 class="text-3xl font-bold mb-2">Deteksi Emosi Wajah</h2>
+                  <p class="text-lg opacity-90">Gunakan webcam untuk menganalisis ekspresi Anda.</p>
+                  <span class="mt-4 inline-block bg-white text-green-700 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition duration-300 shadow-md">Deteksi Sekarang →</span>
+                </div>
               </div>
             </div>
-          </div>
-        </a>
+          </a>
+
+          <a href="history.html" class="block">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-8 rounded-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out cursor-pointer h-full flex flex-col justify-center">
+              <div class="flex items-center space-x-6">
+                <div class="text-6xl">📈</div>
+                <div>
+                  <h2 class="text-3xl font-bold mb-2">Riwayat & Analisis</h2>
+                  <p class="text-lg opacity-90">Jelajahi grafik dan log deteksi emosi Anda.</p>
+                  <span class="mt-4 inline-block bg-white text-blue-700 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition duration-300 shadow-md">Lihat Riwayat →</span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
       </section>
 
-<section id="analysis" class="mb-12">
+      <section id="analysis" class="mb-12">
         <h2 class="text-3xl font-semibold text-gray-800 mb-8 text-center md:text-left">Analisis Emosi Mendalam</h2>
         <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-gray-200">
-          
           <div class="mb-10">
             <h3 class="text-2xl font-semibold mb-2 text-gray-700"><i class="fas fa-chart-line mr-2 text-green-500"></i>Tren Frekuensi Emosi (7 Hari)</h3>
             <div class="h-72 md:h-80 bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <canvas id="dashboardWeeklyTrendChart"></canvas> 
+              <canvas id="dashboardWeeklyTrendChart"></canvas>
             </div>
           </div>
 
@@ -128,30 +133,6 @@
                 <canvas id="dashboardEmotionDistributionChart"></canvas>
               </div>
             </div>
-          </div>
-
-        </div>
-      </section>
-
-      <section id="journal" class="mb-12">
-        <h2 class="text-3xl font-semibold text-gray-800 mb-6">Jurnal Emosi Terakhir</h2>
-        <div class="bg-white p-8 rounded-lg shadow-md border border-green-100">
-          <div class="space-y-6">
-            <div class="border-b pb-4 border-gray-200 last:border-b-0 last:pb-0">
-              <p class="text-sm text-gray-500 mb-1">20 Mei 2025, 10:30 WIB - <span class="font-semibold text-green-600">Bahagia</span></p>
-              <p class="text-gray-700">"Sangat bersyukur hari ini karena berhasil menyelesaikan proyek tepat waktu. Rasanya lega sekali!"</p>
-            </div>
-            <div class="border-b pb-4 border-gray-200 last:border-b-0 last:pb-0">
-              <p class="text-sm text-gray-500 mb-1">19 Mei 2025, 15:45 WIB - <span class="font-semibold text-yellow-600">Netral</span></p>
-              <p class="text-gray-700">"Hari yang cukup sibuk dengan banyak rapat, tidak ada yang istimewa. Hanya pekerjaan rutin."</p>
-            </div>
-            <div class="border-b pb-4 border-gray-200 last:border-b-0 last:pb-0">
-              <p class="text-sm text-gray-500 mb-1">18 Mei 2025, 21:00 WIB - <span class="font-semibold text-red-600">Sedih</span></p>
-              <p class="text-gray-700">"Merasa sedikit down setelah mendengar kabar dari teman lama. Butuh waktu untuk mencerna."</p>
-            </div>
-          </div>
-          <div class="text-center mt-8">
-            <a href="#" class="text-green-600 font-semibold hover:underline">Lihat Semua Entri Jurnal →</a>
           </div>
         </div>
       </section>
