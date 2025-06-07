@@ -1,5 +1,5 @@
-import { MODEL_PATH } from "./constants.js";
-import { updateUI, clearCanvas } from "./ui.js";
+import { MODEL_PATH } from "./utils/constants.js";
+import { updateUI, clearCanvas } from "./components/ui.js";
 
 let lastDetectedEmotionData = null;
 let currentDisplaySize = { width: 0, height: 0 };
