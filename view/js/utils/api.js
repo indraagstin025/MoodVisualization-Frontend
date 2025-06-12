@@ -1,4 +1,4 @@
-import { API_URL, JWT_TOKEN_KEY } from "./constants.js";
+import { API_BASE_URL, JWT_TOKEN_KEY } from "../utils/constants.js";
 
 export async function sendEmotionDataToAPI(data, saveStatusEl) {
   if (saveStatusEl) {
@@ -19,7 +19,7 @@ export async function sendEmotionDataToAPI(data, saveStatusEl) {
       return false;
     }
 
-    const response = await fetch(API_URL, {
+    const response = await fetch(API_BASE_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

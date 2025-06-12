@@ -1,7 +1,41 @@
 import { logoutUser } from "../Services/AuthServices.js";
+import { API_BASE_URL } from "../utils/constants.js";
+
+function updateNavbarProfileInfo() {
+  console.log("===================================");
+  console.log("LAYOUT.JS: Memulai update info navbar...");
+
+  const userPhotoElement = document.getElementById("navbar-user-photo");
+  const userString = localStorage.getItem("user");
+
+  if (!userPhotoElement) {
+    console.error("LAYOUT.JS: GAGAL! Elemen <img id='navbar-user-photo'> tidak ditemukan di HTML.");
+    return;
+  }
+
+  if (userString && userString !== "undefined") {
+    const user = JSON.parse(userString);
+    console.log("LAYOUT.JS: Data 'user' dari localStorage ditemukan:", user);
+
+    const photoUrlFromAccessor = user.photo_url;
+    console.log("LAYOUT.JS: Mengecek properti 'photo_url' dari data di atas. Isinya:", photoUrlFromAccessor);
+
+    if (photoUrlFromAccessor) {
+      console.log("LAYOUT.JS: SUKSES! 'photo_url' valid. Mengatur src gambar menjadi:", photoUrlFromAccessor);
+      userPhotoElement.src = photoUrlFromAccessor;
+    } else {
+      console.log("LAYOUT.JS: INFO. 'photo_url' kosong. Gambar akan tetap menggunakan src default dari HTML.");
+    }
+  } else {
+    console.log("LAYOUT.JS: INFO. Tidak ada data 'user' yang valid di localStorage.");
+  }
+  console.log("===================================");
+}
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Skrip UI Umum dimuat.");
+  console.log("Skrip layout.js utama dimuat.");
+
+  updateNavbarProfileInfo();
 
   const logoutButton = document.getElementById("logoutButton");
   const logoutButtonMobile = document.getElementById("logoutButtonMobile");
@@ -47,11 +81,6 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll("nav a, #mobileMenu a").forEach((anchor) => {
     anchor.addEventListener("click", function (e) {
       const href = this.getAttribute("href");
-      const isLogoutButtonInsideMenu = this.id === "logoutButtonMobile";
-
-      if (isLogoutButtonInsideMenu) {
-        return;
-      }
 
       if (href && href.startsWith("#") && this.hostname === window.location.hostname && this.pathname === window.location.pathname) {
         e.preventDefault();

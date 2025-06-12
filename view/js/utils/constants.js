@@ -1,3 +1,4 @@
+export const API_BASE_URL = "http://localhost:8000";
 export const MODEL_PATH = "/public/models"; 
 export const API_URL_EMOTION_RECORDS = "http://localhost:8000/api/emotion-records"; 
 export const API_URL_EMOTION_HISTORY_SUMMARY = "http://localhost:8000/api/emotion-history/summary";

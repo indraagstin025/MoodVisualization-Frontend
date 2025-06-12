@@ -37,43 +37,117 @@ export function renderAverageScoreBarChart(canvasId, averageScoresData, chartTit
   }
 }
 
-export function renderFrequencyTrendLineChart(canvasId, apiChartJsData, existingChartInstance) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) {
-    console.warn(`Canvas element with id '${canvasId}' not found for FrequencyTrendLineChart.`);
-    return null;
-  }
-  const ctx = canvas.getContext("2d");
+export function renderFrequencyTrendLineChart(canvasId, apiChartJsData, existingChartInstance, customOptions = {}) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) {
+        console.warn(`Canvas dengan ID '${canvasId}' tidak ditemukan.`);
+        return null;
+    }
+    const ctx = canvas.getContext("2d");
 
-  const datasets = apiChartJsData.datasets.map((dataset) => ({
-    ...dataset,
-    fill: false,
-    borderColor: (CHART_COLORS && CHART_COLORS[dataset.label.toLowerCase()]) || (BORDER_COLORS && BORDER_COLORS[dataset.label.toLowerCase()]) || "#4A5568",
-    backgroundColor: (CHART_COLORS && CHART_COLORS[dataset.label.toLowerCase()]) || (BORDER_COLORS && BORDER_COLORS[dataset.label.toLowerCase()]) || "#4A5568",
-    tension: 0.1,
-    borderWidth: 2,
-    pointRadius: 3,
-    pointHoverRadius: 5,
-  }));
+    // === PENYEMPURNAAN VISUAL DATASET ===
+    const datasets = apiChartJsData.datasets.map((dataset) => ({
+        ...dataset,
+        fill: 'origin', // Mengisi area di bawah garis
+        borderColor: (BORDER_COLORS && BORDER_COLORS[dataset.label.toLowerCase()]) || "#4A5568", // Menggunakan BORDER_COLORS
+        backgroundColor: (CHART_COLORS && CHART_COLORS[dataset.label.toLowerCase()]) || "rgba(74, 85, 104, 0.2)", // Menggunakan CHART_COLORS untuk area fill
+        tension: 0.4, // Sedikit lebih melengkung untuk estetika yang lebih halus
+        borderWidth: 2, // Garis sedikit lebih tipis untuk ukuran kecil
+        pointRadius: 3, // Titik data lebih kecil
+        pointHoverRadius: 5, // Titik data lebih kecil saat di-hover
+        pointBackgroundColor: (CHART_COLORS && CHART_COLORS[dataset.label.toLowerCase()]) || "#4A5568", // Warna titik data sama dengan garis
+        pointBorderColor: '#fff', // Border putih di sekitar titik untuk kontras
+        pointBorderWidth: 1, // Ketebalan border titik lebih tipis
+    }));
 
-  const chartData = { labels: apiChartJsData.labels, datasets };
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: { y: { beginAtZero: true, title: { display: true, text: "Frekuensi" }, ticks: { stepSize: 1 } }, x: { title: { display: true, text: "Tanggal (7 Hari Terakhir)" } } },
-    plugins: { legend: { position: "bottom" }, tooltip: { mode: "index", intersect: false } },
-  };
+    const chartData = { labels: apiChartJsData.labels, datasets };
 
-  if (existingChartInstance && existingChartInstance.canvas === canvas) {
-    existingChartInstance.data = chartData;
-    existingChartInstance.options = chartOptions;
-    existingChartInstance.update();
-    return existingChartInstance;
-  } else {
+    // === PENYEMPURNAAN OPSI CHART ===
+    const baseOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { 
+            y: { 
+                beginAtZero: true, 
+                ticks: { 
+                    stepSize: 1, // Sumbu Y hanya menampilkan angka bulat
+                    font: { size: 10 } // Font lebih kecil
+                },
+                grid: {
+                    color: '#E5E7EB', // Garis kisi lebih terang
+                    drawBorder: false, // Jangan menggambar border di sekitar area grid
+                },
+            },
+            x: {
+                ticks: {
+                    font: { size: 10 } // Font lebih kecil
+                },
+                grid: {
+                    color: '#E5E7EB', // Garis kisi lebih terang
+                    drawBorder: false,
+                },
+            }
+        },
+        plugins: { 
+            legend: { 
+                position: "top", // Posisi legenda di atas agar lebih rapi
+                labels: {
+                    font: { size: 10 }, // Font legenda lebih kecil
+                    padding: 10, // Beri jarak pada legenda lebih kecil
+                    usePointStyle: true, // Menggunakan bentuk titik untuk item legenda
+                }
+            },
+            title: { // Menambahkan bagian title plugin
+                display: true,
+                text: 'Grafik Tren Frekuensi Emosi',
+                font: {
+                    size: 14, // Ukuran judul lebih kecil
+                    weight: 'bold',
+                },
+                padding: { top: 10, bottom: 10 },
+                color: '#333'
+            },
+            tooltip: { // Menyesuaikan tooltip untuk ukuran yang lebih kecil
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleFont: {
+                    size: 10,
+                },
+                bodyFont: {
+                    size: 9,
+                },
+                padding: 8,
+                cornerRadius: 5,
+                displayColors: true,
+                boxPadding: 3,
+            }
+        },
+        // Opsi untuk kualitas rendering yang lebih baik
+        layout: {
+            padding: 5 // Padding keseluruhan lebih kecil
+        },
+        animation: { // Menambahkan animasi untuk kesan lebih modern
+            duration: 1000,
+            easing: 'easeInOutQuart',
+            mode: 'dataset',
+        },
+        hover: { // Menambahkan opsi hover yang lebih baik
+            mode: 'index',
+            intersect: false,
+            animationDuration: 400,
+        },
+    };
+
+    // Gabungkan opsi dasar dengan opsi custom (misal: mematikan animasi untuk ekspor)
+    const finalOptions = { ...baseOptions, ...customOptions };
+
+    // Hancurkan chart lama jika ada
     const chartOnCanvas = Chart.getChart(canvas);
-    if (chartOnCanvas) chartOnCanvas.destroy();
-    return new Chart(ctx, { type: "line", data: chartData, options: chartOptions });
-  }
+    if (chartOnCanvas) {
+        chartOnCanvas.destroy();
+    }
+
+    // Buat chart baru dengan data dan opsi yang sudah disempurnakan
+    return new Chart(ctx, { type: "line", data: chartData, options: finalOptions });
 }
 
 export function renderEmotionDistributionDoughnutChart(canvasId, aggregatedData, existingChartInstance) {

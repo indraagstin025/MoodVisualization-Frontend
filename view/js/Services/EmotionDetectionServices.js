@@ -186,24 +186,61 @@ export async function fetchEmotionSummaryForChart(periodType, params = {}) {
 
 /**
  * Mengambil tren frekuensi kemunculan emosi per hari.
+ * Fleksibel: bisa untuk user yang login atau untuk user ID spesifik.
  * @param {string} startDate - Tanggal mulai (YYYY-MM-DD).
  * @param {string} endDate - Tanggal selesai (YYYY-MM-DD).
+ * @param {number|string|null} userId - ID pengguna spesifik (opsional). Jika null, backend akan menggunakan user yang sedang login.
  * @returns {Promise<object>} Data tren untuk charting.
  */
-export async function fetchEmotionFrequencyTrend(startDate, endDate) {
-  const queryParams = new URLSearchParams({
-    start_date: startDate,
-    end_date: endDate,
-  }).toString();
+export async function fetchEmotionFrequencyTrend(startDate, endDate, userId = null) {
+    // 1. Dapatkan token dari localStorage
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+        // Langsung tolak promise jika tidak ada token
+        return Promise.reject(new Error("Token otentikasi tidak ditemukan."));
+    }
 
-  const fullUrl = `${API_URL_EMOTION_HISTORY_FREQUENCY_TREND}?${queryParams}`;
+    // 2. Tentukan URL endpoint
+    // Kita akan gunakan satu URL dasar, dan menambahkan ID siswa jika ada
+    let apiUrl = API_URL_EMOTION_HISTORY_FREQUENCY_TREND;
+    if (userId) {
+        apiUrl += `/${userId}`; // Menambahkan ID siswa ke URL. Contoh: .../frequency-trend/3
+    }
 
-  try {
-    const result = await makeApiRequest(fullUrl, { method: "GET" });
-    console.log("Tren frekuensi emosi berhasil diambil:", result);
-    return result;
-  } catch (error) {
-    console.error("Gagal mengambil tren frekuensi emosi (fetchEmotionFrequencyTrend):", error.message);
-    throw new Error(`Gagal mengambil tren frekuensi emosi: ${error.message}`);
-  }
+    // 3. Buat query string untuk tanggal
+    const queryParams = new URLSearchParams({
+        start_date: startDate,
+        end_date: endDate,
+    }).toString();
+
+    const fullUrl = `${apiUrl}?${queryParams}`;
+    
+    // Log ini sangat membantu untuk debugging
+    console.log(`Frontend memanggil URL: ${fullUrl}`);
+
+    // 4. Lakukan panggilan API menggunakan fetch, mengikuti pola AuthServices.js Anda
+    try {
+        const response = await fetch(fullUrl, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            // Jika response tidak ok, lempar error dengan pesan dari server
+            throw new Error(result.message || "Gagal mengambil data tren dari server.");
+        }
+
+        return result; // Kembalikan seluruh objek hasil jika sukses
+
+    } catch (error) {
+        console.error("Gagal total di fetchEmotionFrequencyTrend:", error);
+        // Lempar kembali error agar bisa ditangkap oleh pemanggilnya (dashboard.js)
+        throw error;
+    }
 }
