@@ -160,6 +160,7 @@ function populateClassFilter(students) {
 
     const selectedValue = filterSelect.value;
     filterSelect.innerHTML = '<option value="">Semua Kelas</option>';
+    
 
     for (const [id, name] of existingClasses.entries()) {
         const option = document.createElement("option");
