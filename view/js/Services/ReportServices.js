@@ -1,12 +1,11 @@
-// Menggunakan pola yang sama seperti AuthServices.js
 import { API_BASE_URL } from '../utils/constants.js';
-
 
 /**
  * Membuat laporan baru untuk seorang siswa.
  * @param {number} studentId 
  * @param {string} startDate 
  * @param {string} endDate 
+ * @param {string|null} chartImageBase64 
  * @returns {Promise<Object>} Respons dari API.
  */
 export async function createReport(studentId, startDate, endDate, chartImageBase64) {
@@ -19,11 +18,12 @@ export async function createReport(studentId, startDate, endDate, chartImageBase
         student_id: studentId,
         start_date: startDate,
         end_date: endDate,
-        chart_image_base64: chartImageBase64 
+        chart_image_base64: chartImageBase64
     };
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/reports`, {
+        // PENYESUAIAN: URL diubah agar cocok dengan route di backend
+        const response = await fetch(`${API_BASE_URL}/api/reports/generate`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -63,7 +63,8 @@ export async function listMyReports() {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/my-reports`, {
+        // PENYESUAIAN: URL diubah menjadi /api/reports
+        const response = await fetch(`${API_BASE_URL}/api/reports`, {
             method: "GET",
             headers: {
                 "Accept": "application/json",
@@ -93,7 +94,8 @@ export async function downloadReport(reportId) {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/reports/download/${reportId}`, {
+        // PENYESUAIAN: URL diubah menjadi /api/reports/{id}/download
+        const response = await fetch(`${API_BASE_URL}/api/reports/${reportId}/download`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -101,7 +103,9 @@ export async function downloadReport(reportId) {
         });
 
         if (!response.ok) {
-            throw new Error('Gagal mengunduh file laporan.');
+            // Coba baca pesan error dari JSON jika unduhan gagal
+            const errorResult = await response.json();
+            throw new Error(errorResult.message || 'Gagal mengunduh file laporan.');
         }
 
         const filename = `laporan-emosi-${reportId}.pdf`;

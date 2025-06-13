@@ -1,4 +1,8 @@
-import { API_URL_EMOTION_RECORDS, API_URL_EMOTION_HISTORY_SUMMARY, API_URL_EMOTION_HISTORY_FREQUENCY_TREND, JWT_TOKEN_KEY } from "../utils/constants.js";
+import { API_URL_EMOTION_RECORDS, 
+  API_URL_EMOTION_HISTORY_SUMMARY, 
+  API_URL_EMOTION_HISTORY_FREQUENCY_TREND, 
+  JWT_TOKEN_KEY,
+  API_URL_STUDENT_EMOTION_HISTORY,  } from "../utils/constants.js";
 
 /**
  * Mengambil token JWT dari localStorage.
@@ -9,30 +13,24 @@ function getAuthToken() {
 }
 
 /**
- * Fungsi helper untuk membuat request fetch dengan header standar.
- * Juga menangani parsing JSON dan error dasar.
+ * Fungsi helper terpusat untuk membuat request fetch.
  * @param {string} fullUrl - URL lengkap untuk API endpoint.
  * @param {object} options - Opsi untuk fetch (method, body, dll.)
  * @returns {Promise<object>} Hasil JSON dari API.
- * @throws {Error} Jika terjadi kesalahan jaringan atau respons error dari API.
  */
 async function makeApiRequest(fullUrl, options = {}) {
   const token = getAuthToken();
 
-  if (!token && !options.isPublic) {
-    alert("Anda harus login untuk melakukan tindakan ini.");
-    console.error("Error: Token JWT tidak ditemukan.");
-
+  if (!token) {
+    // Hindari 'alert', lempar error agar bisa ditangani di UI
     throw new Error("Token JWT tidak ditemukan. Silakan login kembali.");
   }
 
   const defaultHeaders = {
     "Content-Type": "application/json",
     Accept: "application/json",
+    Authorization: `Bearer ${token}`,
   };
-  if (token) {
-    defaultHeaders["Authorization"] = `Bearer ${token}`;
-  }
 
   const fetchOptions = {
     ...options,
@@ -44,31 +42,26 @@ async function makeApiRequest(fullUrl, options = {}) {
 
   try {
     const response = await fetch(fullUrl, fetchOptions);
-
+    
+    // Handle response kosong (misal: 204 No Content)
     if (response.status === 204 || response.headers.get("content-length") === "0") {
-      if (!response.ok) {
-        console.error(`Request error: ${response.status} ${response.statusText}`, await response.text());
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
-      }
+      if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`);
       return null;
     }
 
     const result = await response.json();
 
     if (!response.ok) {
-      console.error("API Error Response:", result);
-      throw new Error(result.message || `Error ${response.status}: ${response.statusText}`);
+      // Lempar error dengan pesan dari server jika ada
+      throw new Error(result.message || `Error ${response.status}: Terjadi kesalahan server.`);
     }
     return result;
   } catch (error) {
-    console.error("Fetch/Network Error in makeApiRequest:", error.message, "URL:", fullUrl);
-    if (error.name === "SyntaxError") {
-      throw new Error("Respons dari server bukan JSON yang valid.");
-    }
+    console.error("Kesalahan pada makeApiRequest:", error.message, "URL:", fullUrl);
+    // Lempar kembali error agar bisa ditangkap oleh pemanggilnya
     throw error;
   }
 }
-
 /**
  * Menyimpan data deteksi emosi baru ke API.
  * @param {object} emotionData - Objek data emosi yang akan dikirim.
@@ -189,58 +182,39 @@ export async function fetchEmotionSummaryForChart(periodType, params = {}) {
  * Fleksibel: bisa untuk user yang login atau untuk user ID spesifik.
  * @param {string} startDate - Tanggal mulai (YYYY-MM-DD).
  * @param {string} endDate - Tanggal selesai (YYYY-MM-DD).
- * @param {number|string|null} userId - ID pengguna spesifik (opsional). Jika null, backend akan menggunakan user yang sedang login.
+ * @param {number|string|null} userId - ID pengguna spesifik (opsional).
  * @returns {Promise<object>} Data tren untuk charting.
  */
 export async function fetchEmotionFrequencyTrend(startDate, endDate, userId = null) {
-    // 1. Dapatkan token dari localStorage
-    const token = localStorage.getItem('jwt_token');
-    if (!token) {
-        // Langsung tolak promise jika tidak ada token
-        return Promise.reject(new Error("Token otentikasi tidak ditemukan."));
-    }
+  
+  // Tentukan URL mana yang akan digunakan berdasarkan adanya userId
+  let apiUrl;
+  if (userId) {
+    // Jika ada userId, kita panggil endpoint untuk guru melihat data siswa
+    // Variabel ini sekarang sudah terdefinisi karena sudah di-impor
+    apiUrl = `${API_URL_STUDENT_EMOTION_HISTORY}/${userId}/emotion-history`;
+  } else {
+    // Jika tidak ada, panggil endpoint untuk murid melihat datanya sendiri
+    apiUrl = API_URL_EMOTION_HISTORY_FREQUENCY_TREND;
+  }
 
-    // 2. Tentukan URL endpoint
-    // Kita akan gunakan satu URL dasar, dan menambahkan ID siswa jika ada
-    let apiUrl = API_URL_EMOTION_HISTORY_FREQUENCY_TREND;
-    if (userId) {
-        apiUrl += `/${userId}`; // Menambahkan ID siswa ke URL. Contoh: .../frequency-trend/3
-    }
+  // Buat query string untuk tanggal
+  const queryParams = new URLSearchParams({
+    start_date: startDate,
+    end_date: endDate,
+  }).toString();
 
-    // 3. Buat query string untuk tanggal
-    const queryParams = new URLSearchParams({
-        start_date: startDate,
-        end_date: endDate,
-    }).toString();
+  const fullUrl = `${apiUrl}?${queryParams}`;
+  
+  console.log(`Frontend memanggil URL: ${fullUrl}`);
 
-    const fullUrl = `${apiUrl}?${queryParams}`;
-    
-    // Log ini sangat membantu untuk debugging
-    console.log(`Frontend memanggil URL: ${fullUrl}`);
-
-    // 4. Lakukan panggilan API menggunakan fetch, mengikuti pola AuthServices.js Anda
-    try {
-        const response = await fetch(fullUrl, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            // Jika response tidak ok, lempar error dengan pesan dari server
-            throw new Error(result.message || "Gagal mengambil data tren dari server.");
-        }
-
-        return result; // Kembalikan seluruh objek hasil jika sukses
-
-    } catch (error) {
-        console.error("Gagal total di fetchEmotionFrequencyTrend:", error);
-        // Lempar kembali error agar bisa ditangkap oleh pemanggilnya (dashboard.js)
-        throw error;
-    }
+  // Gunakan helper 'makeApiRequest' yang sudah ada
+  try {
+    const result = await makeApiRequest(fullUrl, { method: "GET" });
+    console.log("Tren frekuensi emosi berhasil diambil:", result);
+    return result;
+  } catch (error) {
+    console.error(`Gagal mengambil tren frekuensi (fetchEmotionFrequencyTrend):`, error.message);
+    throw new Error(`Gagal mengambil data tren: ${error.message}`);
+  }
 }

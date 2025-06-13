@@ -1,16 +1,10 @@
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://localhost:8000"; // Pastikan port ini sesuai dengan server Lumen Anda
 
 /**
  * Mengirim data registrasi pengguna ke API.
- * @param {string} name
- * @param {string} email
- * @param {string} password
- * @param {string} passwordConfirmation
- * @returns {Promise<Object>} Respons dari API
- * @throws {Error} Jika terjadi kesalahan jaringan atau respons API tidak berhasil.
+ * (Tidak ada perubahan di sini, sudah benar)
  */
 export async function registerUser(name, email, password, passwordConfirmation) {
-  // Objek formData tidak lagi memerlukan 'role'
   const formData = {
     name: name,
     email: email,
@@ -19,7 +13,7 @@ export async function registerUser(name, email, password, passwordConfirmation) 
   };
 
   try {
-    const response = await fetch(`${API_BASE_URL}/register`, {
+    const response = await fetch(`${API_BASE_URL}/api/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -27,46 +21,32 @@ export async function registerUser(name, email, password, passwordConfirmation) 
       },
       body: JSON.stringify(formData),
     });
-
     const result = await response.json();
-
     if (!response.ok) {
-      let errorMessage = "Registrasi gagal. Mohon coba lagi.";
-      
-      // Logika ini sudah sangat baik dan akan menangkap error baru dari backend
+      let errorMessage = "Registrasi gagal.";
       if (result.message) {
-        errorMessage = result.message; // Akan menangkap "No teachers available in the system."
+        errorMessage = result.message;
       } else if (result.errors) {
         errorMessage = Object.values(result.errors).flat().join("\n");
       }
-      
       const error = new Error(errorMessage);
-      error.response = { data: result };
-      error.statusCode = response.status;
       throw error;
     }
-
     return result;
   } catch (error) {
-    console.error("Error in registerUser (AuthServices):", error);
-    // Teruskan error yang sudah diformat atau buat yang baru jika error jaringan
-    const customError = new Error(error.message || "Terjadi kesalahan jaringan.");
-    customError.originalError = error;
-    throw customError;
+    console.error("Error in registerUser:", error);
+    throw error;
   }
 }
 
 /**
  * Mengirim data login pengguna ke API.
- * @param {string} email
- * @param {string} password
- * @returns {Promise<Object>} Respons dari API yang berisi token.
- * @throws {Error} Jika terjadi kesalahan jaringan atau respons API tidak berhasil.
  */
 export async function loginUser(email, password) {
   const formData = { email, password };
   try {
-    const response = await fetch(`${API_BASE_URL}/login`, {
+    // PENYESUAIAN: URL diubah ke /api/login
+    const response = await fetch(`${API_BASE_URL}/api/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -78,155 +58,119 @@ export async function loginUser(email, password) {
     const result = await response.json();
 
     if (!response.ok) {
-      let errorMessage = "Login gagal. Email atau password salah.";
-      if (result.message) {
-        errorMessage = result.message;
-      }
-      const error = new Error(errorMessage);
-      error.response = { data: result };
-      error.statusCode = response.status;
-      throw error;
+      throw new Error(result.message || "Email atau password salah.");
     }
 
-    console.log("Data yang dikembalikan dari API login di AuthServices:", result);
+    // PENYESUAIAN: Simpan token DAN data user ke localStorage agar konsisten
+    if (result.token && result.user) {
+        localStorage.setItem("jwt_token", result.token);
+        localStorage.setItem("user", JSON.stringify(result.user));
+    }
+
+    console.log("Login berhasil, token dan user disimpan.");
     return result;
   } catch (error) {
-    console.error("Error in loginUser (AuthServices):", error);
-
-    const customError = new Error(error.message || "Terjadi kesalahan jaringan.");
-    customError.originalError = error;
-    throw customError;
+    console.error("Error in loginUser:", error);
+    throw error;
   }
 }
 
 /**
- * Melakukan logout pengguna.
- * @returns {void}
+ * Melakukan logout pengguna dengan meng-invalidate token di backend.
  */
-export function logoutUser() {
-  localStorage.removeItem("jwt_token");
-
-  window.location.href = "login.html";
+export async function logoutUser() {
+  const token = localStorage.getItem("jwt_token");
+  try {
+    // PENYESUAIAN: Panggil endpoint logout di backend untuk keamanan
+    if (token) {
+        await fetch(`${API_BASE_URL}/api/logout`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+    }
+  } catch (error) {
+    console.error("Gagal logout di server, token tetap akan dihapus di client:", error);
+  } finally {
+    // Apapun yang terjadi, hapus data dari client dan redirect
+    localStorage.removeItem("jwt_token");
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+  }
 }
 
 /**
  * Mengambil informasi pengguna yang sedang login.
- * @returns {Promise<Object>} Data pengguna.
- * @throws {Error} Jika tidak ada token atau request gagal.
  */
 export async function getLoggedInUser() {
   const token = localStorage.getItem("jwt_token");
-  if (!token) {
-    throw new Error("Tidak ada token autentikasi.");
-  }
+  if (!token) throw new Error("Tidak ada token autentikasi.");
 
   try {
-    const response = await fetch(`${API_BASE_URL}/me`, {
+    // PENYESUAIAN: URL diubah ke /api/me
+    const response = await fetch(`${API_BASE_URL}/api/me`, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
         Authorization: `Bearer ${token}`,
+        Accept: "application/json",
       },
     });
-
     const result = await response.json();
-
-    if (!response.ok) {
-      let errorMessage = "Gagal mengambil data pengguna.";
-      if (result.message) {
-        errorMessage = result.message;
-      }
-      const error = new Error(errorMessage);
-      error.response = { data: result };
-      error.statusCode = response.status;
-      throw error;
-    }
-
+    if (!response.ok) throw new Error(result.message || "Gagal mengambil data pengguna.");
     return result;
   } catch (error) {
-    console.error("Error in getLoggedInUser (AuthServices):", error);
-
-    const customError = new Error(error.message || "Terjadi kesalahan jaringan.");
-    customError.originalError = error;
-    throw customError;
+    console.error("Error in getLoggedInUser:", error);
+    throw error;
   }
 }
 
 /**
  * Mengirim data pembaruan profil pengguna ke API.
- * @param {FormData} formData - Objek FormData yang berisi data dari form (termasuk file).
- * @returns {Promise<Object>} Respons dari API yang berisi data user terupdate.
- * @throws {Error} Jika terjadi kesalahan jaringan atau respons API tidak berhasil.
  */
-
-
 export async function updateUserProfile(formData) {
   const token = localStorage.getItem("jwt_token");
-  if (!token) {
-    throw new Error("Tidak ada token autentikasi. Silakan login kembali.");
-  }
+  if (!token) throw new Error("Tidak ada token autentikasi.");
 
   try {
-    const response = await fetch(`${API_BASE_URL}/user/profile`, {
-      method: "POST", 
+    // PENYESUAIAN: URL diubah ke /api/profile
+    const response = await fetch(`${API_BASE_URL}/api/profile`, {
+      method: "POST",
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: formData,
     });
-
-    
     const result = await response.json();
-
-    
     if (!response.ok) {
-        
-        
-        
-        let errorMessage = "Gagal mengupdate profil."; 
-        
-        
-        if (result.errors) {
-            
-            errorMessage = Object.values(result.errors).flat().join(' ');
-        } else if (result.message) {
-            
-            errorMessage = result.message;
-        }
-        
-        
-        throw new Error(errorMessage);
+      let errorMessage = "Gagal mengupdate profil.";
+      if (result.errors) {
+        errorMessage = Object.values(result.errors).flat().join(' ');
+      } else if (result.message) {
+        errorMessage = result.message;
+      }
+      throw new Error(errorMessage);
     }
-
-    
+    // Update data user di localStorage dengan data baru dari server
     localStorage.setItem('user', JSON.stringify(result.user));
-    console.log("Profil berhasil diupdate, data baru di localStorage:", result.user);
     return result;
-
   } catch (error) {
-    console.error("Error in updateUserProfile (AuthServices):", error);
-    
+    console.error("Error in updateUserProfile:", error);
     throw error;
   }
 }
 
-
-
 /**
  * Membuat pengguna baru melalui endpoint admin.
- * @param {Object} userData - Objek berisi name, email, password, dan role.
- * @returns {Promise<Object>} Respons dari API.
  */
 export async function createUserByAdmin(userData) {
   const token = localStorage.getItem("jwt_token");
-  if (!token) {
-    throw new Error("Token otentikasi admin tidak ditemukan.");
-  }
+  if (!token) throw new Error("Token otentikasi admin tidak ditemukan.");
 
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/users`, {
+    // PENYESUAIAN: URL diubah ke /api/users
+    const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -235,28 +179,16 @@ export async function createUserByAdmin(userData) {
       },
       body: JSON.stringify(userData),
     });
-
     const result = await response.json();
-
-    
-    
-    
     if (!response.ok) {
       let errorMessage = "Gagal membuat pengguna baru.";
-      
-      
       if (result.errors) {
-        
         errorMessage = Object.values(result.errors).flat().join(' ');
       } else if (result.message) {
-        
         errorMessage = result.message;
       }
-      
       throw new Error(errorMessage);
     }
-    
-
     return result;
   } catch (error) {
     console.error("Error in createUserByAdmin:", error);
@@ -264,56 +196,48 @@ export async function createUserByAdmin(userData) {
   }
 }
 
-
-
 /**
  * Mengambil daftar semua pengguna dari endpoint admin.
- * @returns {Promise<Array>} Array berisi objek pengguna.
  */
 export async function getAllUsersByAdmin() {
-  const token = localStorage.getItem("jwt_token");
-  if (!token) {
-    throw new Error("Token otentikasi admin tidak ditemukan.");
-  }
+    const token = localStorage.getItem("jwt_token");
+    if (!token) throw new Error("Token otentikasi admin tidak ditemukan.");
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/admin/users`, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.message || "Gagal mengambil daftar pengguna.");
+    try {
+        // --- PERBAIKAN DI SINI ---
+        // URL harus mengarah ke endpoint admin yang benar
+        const response = await fetch(`${API_BASE_URL}/api/admin/users`, { // <--- UBAH URL INI!
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            // Log response status dan body untuk debugging lebih lanjut
+            console.error('Failed to fetch users:', response.status, result);
+            throw new Error(result.message || "Gagal mengambil daftar pengguna.");
+        }
+        return result.users;
+    } catch (error) {
+        console.error("Error in getAllUsersByAdmin:", error);
+        throw error;
     }
-    
-    return result.users; 
-  } catch (error) {
-    console.error("Error in getAllUsersByAdmin:", error);
-    throw error;
-  }
 }
 
 /**
  * Mengambil data pengguna dari localStorage.
- * Ini adalah cara cepat tanpa memanggil API.
- * @returns {Object|null} Objek pengguna atau null jika tidak ada.
+ * (Tidak ada perubahan di sini, sudah benar)
  */
 export function getUserData() {
     const userString = localStorage.getItem('user');
-    if (!userString) {
-        return null;
-    }
-    
+    if (!userString) return null;
     try {
         return JSON.parse(userString);
     } catch (e) {
         console.error("Gagal parse data user dari localStorage:", e);
-        
+        // Hapus data yang korup agar tidak menyebabkan error berulang
         localStorage.removeItem('user');
         localStorage.removeItem('jwt_token');
         return null;

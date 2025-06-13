@@ -1,12 +1,35 @@
-import { getLoggedInUser, updateUserProfile } from "../Services/AuthServices.js";
+import { getLoggedInUser, updateUserProfile, getUserData } from "../Services/AuthServices.js";
+import { getAllClasses } from "../Services/ClassServices.js";
 import { API_BASE_URL } from "../utils/constants.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   populateProfileData();
   setupImagePreview();
   setupProfileFormSubmit();
+  populateClassDropdown();
 });
 
+async function populateClassDropdown() {
+    try {
+        const classes = await getAllClasses();
+        const selectElement = document.getElementById('kelas');
+        const currentUser = getUserData(); // Asumsi Anda punya fungsi ini
+
+        classes.forEach(cls => {
+            const option = document.createElement('option');
+            option.value = cls.id;
+            option.textContent = cls.name;
+            // Jika ID kelas siswa cocok, buat sebagai pilihan default
+            if (currentUser && currentUser.class_id == cls.id) {
+                option.selected = true;
+            }
+            selectElement.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Gagal memuat daftar kelas:", error);
+        // Anda bisa menampilkan pesan error di UI
+    }
+}
 
 async function populateProfileData() {
   const nameInput = document.getElementById("name");
@@ -29,7 +52,7 @@ async function populateProfileData() {
     if (user.photo_url) {
       profileImagePreview.src = user.photo_url;
     } else {
-      profileImagePreview.src = "public/img/default-avatar.png";
+      profileImagePreview.src = "/public/img/default-avatar.png";
     }
   } else {
     console.error("Tidak ada data pengguna di localStorage.");
@@ -83,6 +106,11 @@ function setupProfileFormSubmit() {
       formData.append("_method", "PUT");
 
       const result = await updateUserProfile(formData);
+
+       console.log("DEBUGGING: FormData contents:");
+            for (let pair of formData.entries()) {
+                console.log(pair[0]+ ': ' + pair[1]);
+            }
 
       Toastify({
         text: result.message || "Profil berhasil diperbarui!",

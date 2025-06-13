@@ -32,7 +32,7 @@
                 <div class="flex items-center space-x-4">
                     <button id="logoutButton" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300 shadow-sm">Logout</button>
                     <a href="profile.html" title="Pengaturan Profil">
-                        <img id="navbar-user-photo" src="public/img/default-avatar.png" alt="Foto Profil" class="w-10 h-10 rounded-full object-cover border-2 border-green-500 hover:border-green-700 cursor-pointer">
+                        <img id="navbar-user-photo" src="public/img/default-avatar.jpg" alt="Foto Profil" class="w-10 h-10 rounded-full object-cover border-2 border-green-500 hover:border-green-700 cursor-pointer">
                     </a>
                 </div>
             </div>
@@ -56,7 +56,7 @@
                     <div class="md:col-span-1 flex flex-col items-center">
                         <label for="photo" class="cursor-pointer group">
                             <div class="relative">
-                                <img id="profileImagePreview" src="public/img/default-avatar.png" alt="Foto Profil" class="w-40 h-40 rounded-full object-cover border-4 border-gray-200 group-hover:border-green-400 transition-all duration-300">
+                                <img id="profileImagePreview" src="public/img/default-avatar.jpg" alt="Foto Profil" class="w-40 h-40 rounded-full object-cover border-4 border-gray-200 group-hover:border-green-400 transition-all duration-300">
                                 <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center rounded-full transition-all duration-300">
                                     <p class="text-white opacity-0 group-hover:opacity-100 font-semibold">Ganti Foto</p>
                                 </div>
@@ -87,6 +87,13 @@
                                     <input type="email" id="email" name="email" class="w-full pl-10 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="email@anda.com">
                                 </div>
                             </div>
+                            <div>
+    <label for="kelas" class="block text-sm font-medium text-gray-700">Kelas</label>
+    <select id="kelas" name="class_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md">
+        <option value="">-- Pilih Kelas --</option>
+        <!-- Opsi kelas akan dimuat oleh JavaScript -->
+    </select>
+</div>
                             <div class="flex justify-end pt-4">
                                 <button type="submit" class="w-full md:w-auto bg-green-600 text-white py-3 px-10 rounded-lg font-semibold hover:bg-green-700 shadow-md transform hover:scale-105">
                                     Simpan Perubahan

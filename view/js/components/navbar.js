@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
  * @param {object} user - Objek pengguna dengan properti name, email, photo_url.
  */
 function populateNavbar(user) {
-    const defaultAvatar = "/public/img/default-avatar.png";
+    const defaultAvatar = "/public/img/default-avatar.jpg";
 
     // Foto di navbar desktop
     const navbarPhoto = document.getElementById('navbar-user-photo');
@@ -65,7 +65,7 @@ function setupProfileModal(user) {
 
     const openModal = () => {
         // Isi data pengguna ke dalam modal setiap kali dibuka
-        if (modalUserPhoto) modalUserPhoto.src = user.photo_url || "/public/img/default-avatar.png";
+        if (modalUserPhoto) modalUserPhoto.src = user.photo_url || "/public/img/default-avatar.jpg";
         if (modalUserName) modalUserName.innerText = user.name;
         if (modalUserEmail) modalUserEmail.innerText = user.email;
 
