@@ -1,7 +1,5 @@
-// pages/dashboard/admin.js
-
 import { createUserByAdmin, getAllUsersByAdmin } from "../../Services/AuthServices.js";
-import { createClass, getAllClasses } from '../../Services/ClassServices.js';
+import { createClass, getAllClasses } from "../../Services/ClassServices.js";
 
 /**
  * Menangani submit form untuk membuat pengguna baru.
@@ -10,12 +8,25 @@ import { createClass, getAllClasses } from '../../Services/ClassServices.js';
 async function handleCreateUserSubmit(event) {
   event.preventDefault();
   const form = event.target;
+  const role = form.querySelector("#newUserRole").value;
+
+  // Siapkan data dasar
   const newUserData = {
     name: form.querySelector("#newUserName").value,
     email: form.querySelector("#newUserEmail").value,
     password: form.querySelector("#newUserPassword").value,
-    role: form.querySelector("#newUserRole").value,
+    role: role,
   };
+
+  // Jika rolenya murid, tambahkan class_id ke data
+  if (role === 'murid') {
+    const classId = form.querySelector("#newUserClass").value;
+    if (!classId) {
+        Toastify({ text: "Error: Silakan pilih kelas untuk murid.", /* ... styling ... */ }).showToast();
+        return;
+    }
+    newUserData.class_id = classId;
+  }
 
   try {
     const result = await createUserByAdmin(newUserData);
@@ -27,7 +38,7 @@ async function handleCreateUserSubmit(event) {
       style: { background: "linear-gradient(to right, #00b09b, #96c93d)" },
     }).showToast();
     form.reset();
-    // Memuat ulang daftar pengguna untuk menampilkan data baru
+
     setupAdminUserList();
   } catch (error) {
     Toastify({
@@ -117,7 +128,7 @@ async function setupAdminUserList() {
 
     const nextButton = createNavButton("Berikutnya", () => displayUsers(currentPage + 1));
     if (currentPage === pageCount) nextButton.disabled = true;
-    
+
     if (prevButton.disabled) prevButton.classList.add("opacity-50", "cursor-not-allowed");
     if (nextButton.disabled) nextButton.classList.add("opacity-50", "cursor-not-allowed");
 
@@ -147,55 +158,95 @@ async function setupAdminUserList() {
 }
 
 function setupClassManagement() {
-    const addBtn = document.getElementById('add-class-btn');
-    const classNameInput = document.getElementById('new-class-name');
-    const errorP = document.getElementById('class-form-error');
+  const addBtn = document.getElementById("add-class-btn");
+  const classNameInput = document.getElementById("new-class-name");
+  const teacherSelect = document.getElementById("new-class-teacher"); // <-- Ambil elemen select guru
+  const errorP = document.getElementById("class-form-error");
 
-    // Muat daftar kelas saat halaman dibuka
-    loadAndRenderClasses();
+  loadAndRenderClasses(); // Ini tidak berubah
 
-    // Event listener untuk tombol tambah
-    addBtn.addEventListener('click', async () => {
-        const newName = classNameInput.value.trim();
-        if (!newName) {
-            errorP.textContent = 'Nama kelas tidak boleh kosong.';
-            return;
-        }
-        errorP.textContent = '';
-        addBtn.disabled = true;
-        addBtn.textContent = 'Menyimpan...';
+  addBtn.addEventListener("click", async () => {
+    const newName = classNameInput.value.trim();
+    const teacherId = teacherSelect.value; // <-- Ambil ID guru yang dipilih
 
-        try {
-            await createClass(newName);
-            classNameInput.value = ''; // Kosongkan input
-            await loadAndRenderClasses(); // Muat ulang daftar kelas
-        } catch (error) {
-            errorP.textContent = error.message;
-        } finally {
-            addBtn.disabled = false;
-            addBtn.textContent = 'Tambah';
-        }
-    });
+    if (!newName) {
+      errorP.textContent = "Nama kelas tidak boleh kosong.";
+      return;
+    }
+    errorP.textContent = "";
+    addBtn.disabled = true;
+    addBtn.textContent = "Menyimpan...";
+
+    try {
+      // Kirim objek yang berisi nama dan teacher_id
+      await createClass({ name: newName, teacher_id: teacherId });
+      classNameInput.value = "";
+      teacherSelect.value = ""; // Reset dropdown guru
+      await loadAndRenderClasses();
+    } catch (error) {
+      errorP.textContent = error.message;
+    } finally {
+      addBtn.disabled = false;
+      addBtn.textContent = "Tambah";
+    }
+  });
 }
 
-// Fungsi baru untuk memuat dan menampilkan daftar kelas
+// GANTI fungsi loadAndRenderClasses LAMA dengan yang BARU ini
 async function loadAndRenderClasses() {
-    const listUl = document.getElementById('class-list');
-    listUl.innerHTML = '<li class="p-2 text-gray-500">Memuat...</li>';
+  const listUl = document.getElementById("class-list");
+  listUl.innerHTML = '<li class="p-2 text-gray-500">Memuat...</li>';
+  try {
+    // Pastikan backend Anda mengirim data guru dengan ->with('teacher')
+    const classes = await getAllClasses(); 
+    listUl.innerHTML = "";
+    if (classes.length === 0) {
+      listUl.innerHTML = '<li class="p-2 text-gray-500">Belum ada kelas.</li>';
+    }
+    classes.forEach((cls) => {
+      const li = document.createElement("li");
+      li.className = "flex justify-between items-center p-2 bg-gray-100 rounded-md";
+      // Tampilkan nama guru jika ada, jika tidak tampilkan "Belum ada"
+      const teacherName = cls.teacher ? cls.teacher.name : '<span class="text-xs text-gray-400">Belum ada wali kelas</span>';
+      li.innerHTML = `<span>${cls.name}</span> <span class="text-sm font-medium text-gray-600">${teacherName}</span>`;
+      listUl.appendChild(li);
+    });
+  } catch (error) {
+    listUl.innerHTML = `<li class="p-2 text-red-500">${error.message}</li>`;
+  }
+}
+
+// Tambahkan fungsi baru ini di dalam admin.js
+async function populateClassDropdownForAdmin() {
+    const selectElement = document.getElementById('newUserClass');
+    if (!selectElement) return;
+
     try {
         const classes = await getAllClasses();
-        listUl.innerHTML = '';
-        if (classes.length === 0) {
-            listUl.innerHTML = '<li class="p-2 text-gray-500">Belum ada kelas.</li>';
-        }
+        selectElement.innerHTML = '<option value="">-- Pilih Kelas --</option>'; // Reset
         classes.forEach(cls => {
-            const li = document.createElement('li');
-            li.className = 'p-2 bg-gray-100 rounded-md';
-            li.textContent = cls.name;
-            listUl.appendChild(li);
+            selectElement.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
         });
     } catch (error) {
-        listUl.innerHTML = `<li class="p-2 text-red-500">${error.message}</li>`;
+        console.error("Gagal memuat kelas untuk form admin:", error);
+    }
+}
+
+// Tambahkan fungsi baru ini di dalam admin.js
+async function populateTeacherDropdown() {
+    const selectElement = document.getElementById('new-class-teacher');
+    if (!selectElement) return;
+
+    try {
+        const users = await getAllUsersByAdmin();
+        const teachers = users.filter(user => user.role === 'pengajar');
+        
+        selectElement.innerHTML = '<option value="">-- Pilih Wali Kelas (Opsional) --</option>'; // Reset
+        teachers.forEach(teacher => {
+            selectElement.innerHTML += `<option value="${teacher.id}">${teacher.name}</option>`;
+        });
+    } catch (error) {
+        console.error("Gagal memuat daftar guru:", error);
     }
 }
 
@@ -205,12 +256,32 @@ async function loadAndRenderClasses() {
  */
 export function init() {
   console.log("Inisialisasi modul dashboard ADMIN.");
-  
+
   const createUserForm = document.getElementById("createUserForm");
+  const roleSelect = document.getElementById("newUserRole");
+  const classContainer = document.getElementById("class-selection-container");
+
   if (createUserForm) {
+    // 1. Isi dropdown kelas saat halaman dimuat
+    populateClassDropdownForAdmin();
+
+    // 2. Tambahkan listener untuk menampilkan/menyembunyikan dropdown kelas
+    if (roleSelect && classContainer) {
+        roleSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'murid') {
+                classContainer.classList.remove('hidden');
+            } else {
+                classContainer.classList.add('hidden');
+            }
+        });
+    }
+    
+    // 3. Setup listener untuk submit form
     createUserForm.addEventListener("submit", handleCreateUserSubmit);
   }
-  
+
+  // Panggil fungsi lain seperti biasa
   setupAdminUserList();
   setupClassManagement();
+  populateTeacherDropdown();
 }

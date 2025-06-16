@@ -1,7 +1,5 @@
-// File: js/utils/chart-renderer.js
-
-import { CHART_COLORS, BORDER_COLORS } from "./constants.js"; // Path relatif dari js/utils ke js/
-import { capitalizeFirstLetter } from "./utils.js"; // Path relatif di dalam folder yang sama
+import { CHART_COLORS, BORDER_COLORS } from "./constants.js";
+import { capitalizeFirstLetter } from "./utils.js";
 
 export function renderAverageScoreBarChart(canvasId, averageScoresData, chartTitle, existingChartInstance) {
   const canvas = document.getElementById(canvasId);
@@ -38,116 +36,87 @@ export function renderAverageScoreBarChart(canvasId, averageScoresData, chartTit
 }
 
 export function renderFrequencyTrendLineChart(canvasId, apiChartJsData, existingChartInstance, customOptions = {}) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) {
-        console.warn(`Canvas dengan ID '${canvasId}' tidak ditemukan.`);
-        return null;
-    }
-    const ctx = canvas.getContext("2d");
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) {
+    console.warn(`Canvas dengan ID '${canvasId}' tidak ditemukan.`);
+    return null;
+  }
+  const ctx = canvas.getContext("2d");
 
-    // === PENYEMPURNAAN VISUAL DATASET ===
-    const datasets = apiChartJsData.datasets.map((dataset) => ({
-        ...dataset,
-        fill: 'origin', // Mengisi area di bawah garis
-        borderColor: (BORDER_COLORS && BORDER_COLORS[dataset.label.toLowerCase()]) || "#4A5568", // Menggunakan BORDER_COLORS
-        backgroundColor: (CHART_COLORS && CHART_COLORS[dataset.label.toLowerCase()]) || "rgba(74, 85, 104, 0.2)", // Menggunakan CHART_COLORS untuk area fill
-        tension: 0.4, // Sedikit lebih melengkung untuk estetika yang lebih halus
-        borderWidth: 2, // Garis sedikit lebih tipis untuk ukuran kecil
-        pointRadius: 3, // Titik data lebih kecil
-        pointHoverRadius: 5, // Titik data lebih kecil saat di-hover
-        pointBackgroundColor: (CHART_COLORS && CHART_COLORS[dataset.label.toLowerCase()]) || "#4A5568", // Warna titik data sama dengan garis
-        pointBorderColor: '#fff', // Border putih di sekitar titik untuk kontras
-        pointBorderWidth: 1, // Ketebalan border titik lebih tipis
-    }));
+  // SOLUSI #1: Definisikan palet warna yang jelas di sini
+  const EMOTION_COLOR_MAP = {
+    // Label emosi harus sama persis dengan yang dari API (case-insensitive)
+    sadness:   { border: 'rgba(25, 118, 210, 1)',   background: 'rgba(25, 118, 210, 0.2)' }, // Biru
+    happiness: { border: 'rgba(255, 193, 7, 1)',    background: 'rgba(255, 193, 7, 0.2)'  }, // Kuning
+    surprise:  { border: 'rgba(156, 39, 176, 1)',    background: 'rgba(156, 39, 176, 0.2)' }, // Ungu
+    anger:     { border: 'rgba(211, 47, 47, 1)',       background: 'rgba(211, 47, 47, 0.2)'  }, // Merah
+    fear:      { border: 'rgba(97, 97, 97, 1)',         background: 'rgba(97, 97, 97, 0.2)'   }, // Abu Gelap
+    disgust:   { border: 'rgba(76, 175, 80, 1)',      background: 'rgba(76, 175, 80, 0.2)'  }, // Hijau
+    neutral:   { border: 'rgba(189, 189, 189, 1)',   background: 'rgba(189, 189, 189, 0.2)' }  // Abu Terang
+  };
 
-    const chartData = { labels: apiChartJsData.labels, datasets };
+  const datasets = apiChartJsData.datasets.map((dataset) => {
+    const emotionKey = dataset.label.toLowerCase();
+    const colors = EMOTION_COLOR_MAP[emotionKey] || { border: '#4A5568', background: 'rgba(74, 85, 104, 0.2)' }; // Fallback color
 
-    // === PENYEMPURNAAN OPSI CHART ===
-    const baseOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: { 
-            y: { 
-                beginAtZero: true, 
-                ticks: { 
-                    stepSize: 1, // Sumbu Y hanya menampilkan angka bulat
-                    font: { size: 10 } // Font lebih kecil
-                },
-                grid: {
-                    color: '#E5E7EB', // Garis kisi lebih terang
-                    drawBorder: false, // Jangan menggambar border di sekitar area grid
-                },
-            },
-            x: {
-                ticks: {
-                    font: { size: 10 } // Font lebih kecil
-                },
-                grid: {
-                    color: '#E5E7EB', // Garis kisi lebih terang
-                    drawBorder: false,
-                },
-            }
-        },
-        plugins: { 
-            legend: { 
-                position: "top", // Posisi legenda di atas agar lebih rapi
-                labels: {
-                    font: { size: 10 }, // Font legenda lebih kecil
-                    padding: 10, // Beri jarak pada legenda lebih kecil
-                    usePointStyle: true, // Menggunakan bentuk titik untuk item legenda
-                }
-            },
-            title: { // Menambahkan bagian title plugin
-                display: true,
-                text: 'Grafik Tren Frekuensi Emosi',
-                font: {
-                    size: 14, // Ukuran judul lebih kecil
-                    weight: 'bold',
-                },
-                padding: { top: 10, bottom: 10 },
-                color: '#333'
-            },
-            tooltip: { // Menyesuaikan tooltip untuk ukuran yang lebih kecil
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                titleFont: {
-                    size: 10,
-                },
-                bodyFont: {
-                    size: 9,
-                },
-                padding: 8,
-                cornerRadius: 5,
-                displayColors: true,
-                boxPadding: 3,
-            }
-        },
-        // Opsi untuk kualitas rendering yang lebih baik
-        layout: {
-            padding: 5 // Padding keseluruhan lebih kecil
-        },
-        animation: { // Menambahkan animasi untuk kesan lebih modern
-            duration: 1000,
-            easing: 'easeInOutQuart',
-            mode: 'dataset',
-        },
-        hover: { // Menambahkan opsi hover yang lebih baik
-            mode: 'index',
-            intersect: false,
-            animationDuration: 400,
-        },
+    return {
+      ...dataset,
+      // SOLUSI #2: Ubah 'fill' menjadi 'false'
+      fill: false, 
+      borderColor: colors.border,
+      backgroundColor: colors.border, // Untuk titik dan legenda, gunakan warna solid
+      tension: 0.1, // Dibuat lebih landai agar tidak terlalu tajam
+      borderWidth: 2,
+      pointRadius: 3,
+      pointHoverRadius: 6,
+      pointBackgroundColor: colors.border,
+      pointBorderColor: "#fff",
+      pointHoverBackgroundColor: colors.border,
+      pointHoverBorderColor: "#fff",
     };
+  });
 
-    // Gabungkan opsi dasar dengan opsi custom (misal: mematikan animasi untuk ekspor)
-    const finalOptions = { ...baseOptions, ...customOptions };
+  const chartData = { labels: apiChartJsData.labels, datasets };
 
-    // Hancurkan chart lama jika ada
-    const chartOnCanvas = Chart.getChart(canvas);
-    if (chartOnCanvas) {
-        chartOnCanvas.destroy();
-    }
+  // Opsi dasar tetap sama dengan yang Anda miliki, sudah bagus
+const baseOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: { beginAtZero: true, ticks: { stepSize: 1 } },
+    x: { grid: { drawOnChartArea: false } },
+  },
+  plugins: {
+    legend: {
+      position: "top",
+      labels: { usePointStyle: true, boxWidth: 8, padding: 20 },
+    },
+    // --- Bagian yang Diubah ---
+    title: {
+      display: true,
+      text: "Grafik Tren Frekuensi Emosi",
+      font: { size: 16, weight: "600" },
+      padding: {
+        top: 15, // Memberi jarak di ATAS judul untuk menurunkannya
+        bottom: 20, // Memberi jarak di BAWAH judul agar seimbang
+      },
+    },
+    // -------------------------
+    tooltip: { mode: "index", intersect: false },
+  },
+  hover: { mode: "index", intersect: false },
+  interaction: { mode: "index", intersect: false },
+};
+  const finalOptions = { ...baseOptions, ...customOptions };
 
-    // Buat chart baru dengan data dan opsi yang sudah disempurnakan
-    return new Chart(ctx, { type: "line", data: chartData, options: finalOptions });
+  // Hancurkan chart lama sebelum membuat yang baru
+  const chartOnCanvas = Chart.getChart(canvas);
+  if (chartOnCanvas) {
+    chartOnCanvas.destroy();
+  }
+
+  // Buat chart dengan tipe 'line'
+  return new Chart(ctx, { type: "line", data: chartData, options: finalOptions });
 }
 
 export function renderEmotionDistributionDoughnutChart(canvasId, aggregatedData, existingChartInstance) {
@@ -196,3 +165,4 @@ export function renderEmotionDistributionDoughnutChart(canvasId, aggregatedData,
     return new Chart(ctx, { type: "doughnut", data: chartData, options: chartOptions });
   }
 }
+

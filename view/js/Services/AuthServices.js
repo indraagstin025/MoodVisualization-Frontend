@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000"; // Pastikan port ini sesuai dengan server Lumen Anda
+const API_BASE_URL = "http://localhost:8000";
 
 /**
  * Mengirim data registrasi pengguna ke API.
@@ -63,8 +63,8 @@ export async function loginUser(email, password) {
 
     // PENYESUAIAN: Simpan token DAN data user ke localStorage agar konsisten
     if (result.token && result.user) {
-        localStorage.setItem("jwt_token", result.token);
-        localStorage.setItem("user", JSON.stringify(result.user));
+      localStorage.setItem("jwt_token", result.token);
+      localStorage.setItem("user", JSON.stringify(result.user));
     }
 
     console.log("Login berhasil, token dan user disimpan.");
@@ -83,12 +83,12 @@ export async function logoutUser() {
   try {
     // PENYESUAIAN: Panggil endpoint logout di backend untuk keamanan
     if (token) {
-        await fetch(`${API_BASE_URL}/api/logout`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+      await fetch(`${API_BASE_URL}/api/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
     }
   } catch (error) {
     console.error("Gagal logout di server, token tetap akan dihapus di client:", error);
@@ -146,14 +146,14 @@ export async function updateUserProfile(formData) {
     if (!response.ok) {
       let errorMessage = "Gagal mengupdate profil.";
       if (result.errors) {
-        errorMessage = Object.values(result.errors).flat().join(' ');
+        errorMessage = Object.values(result.errors).flat().join(" ");
       } else if (result.message) {
         errorMessage = result.message;
       }
       throw new Error(errorMessage);
     }
     // Update data user di localStorage dengan data baru dari server
-    localStorage.setItem('user', JSON.stringify(result.user));
+    localStorage.setItem("user", JSON.stringify(result.user));
     return result;
   } catch (error) {
     console.error("Error in updateUserProfile:", error);
@@ -169,7 +169,6 @@ export async function createUserByAdmin(userData) {
   if (!token) throw new Error("Token otentikasi admin tidak ditemukan.");
 
   try {
-    // PENYESUAIAN: URL diubah ke /api/users
     const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
       method: "POST",
       headers: {
@@ -183,7 +182,7 @@ export async function createUserByAdmin(userData) {
     if (!response.ok) {
       let errorMessage = "Gagal membuat pengguna baru.";
       if (result.errors) {
-        errorMessage = Object.values(result.errors).flat().join(' ');
+        errorMessage = Object.values(result.errors).flat().join(" ");
       } else if (result.message) {
         errorMessage = result.message;
       }
@@ -200,30 +199,27 @@ export async function createUserByAdmin(userData) {
  * Mengambil daftar semua pengguna dari endpoint admin.
  */
 export async function getAllUsersByAdmin() {
-    const token = localStorage.getItem("jwt_token");
-    if (!token) throw new Error("Token otentikasi admin tidak ditemukan.");
+  const token = localStorage.getItem("jwt_token");
+  if (!token) throw new Error("Token otentikasi admin tidak ditemukan.");
 
-    try {
-        // --- PERBAIKAN DI SINI ---
-        // URL harus mengarah ke endpoint admin yang benar
-        const response = await fetch(`${API_BASE_URL}/api/admin/users`, { // <--- UBAH URL INI!
-            method: "GET",
-            headers: {
-                Accept: "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        const result = await response.json();
-        if (!response.ok) {
-            // Log response status dan body untuk debugging lebih lanjut
-            console.error('Failed to fetch users:', response.status, result);
-            throw new Error(result.message || "Gagal mengambil daftar pengguna.");
-        }
-        return result.users;
-    } catch (error) {
-        console.error("Error in getAllUsersByAdmin:", error);
-        throw error;
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      console.error("Failed to fetch users:", response.status, result);
+      throw new Error(result.message || "Gagal mengambil daftar pengguna.");
     }
+    return result.users;
+  } catch (error) {
+    console.error("Error in getAllUsersByAdmin:", error);
+    throw error;
+  }
 }
 
 /**
@@ -231,15 +227,14 @@ export async function getAllUsersByAdmin() {
  * (Tidak ada perubahan di sini, sudah benar)
  */
 export function getUserData() {
-    const userString = localStorage.getItem('user');
-    if (!userString) return null;
-    try {
-        return JSON.parse(userString);
-    } catch (e) {
-        console.error("Gagal parse data user dari localStorage:", e);
-        // Hapus data yang korup agar tidak menyebabkan error berulang
-        localStorage.removeItem('user');
-        localStorage.removeItem('jwt_token');
-        return null;
-    }
+  const userString = localStorage.getItem("user");
+  if (!userString) return null;
+  try {
+    return JSON.parse(userString);
+  } catch (e) {
+    console.error("Gagal parse data user dari localStorage:", e);
+    localStorage.removeItem("user");
+    localStorage.removeItem("jwt_token");
+    return null;
+  }
 }

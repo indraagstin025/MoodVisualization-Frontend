@@ -1,5 +1,4 @@
 import { startWebcamStream, stopWebcamStream } from "./components/webcam.js";
-
 import { loadFaceApiModels, performDetection, setDisplaySize, getLastDetectedEmotionData, resetLastDetectedEmotionData } from "./detector.js";
 import { saveEmotionRecord } from "./Services/EmotionDetectionServices.js";
 import { initializeExpressionChart, resetUI, clearCanvas } from "./components/ui.js";

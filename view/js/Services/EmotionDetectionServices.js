@@ -1,8 +1,4 @@
-import { API_URL_EMOTION_RECORDS, 
-  API_URL_EMOTION_HISTORY_SUMMARY, 
-  API_URL_EMOTION_HISTORY_FREQUENCY_TREND, 
-  JWT_TOKEN_KEY,
-  API_URL_STUDENT_EMOTION_HISTORY,  } from "../utils/constants.js";
+import { API_URL_EMOTION_RECORDS, API_URL_EMOTION_HISTORY_SUMMARY, API_URL_EMOTION_HISTORY_FREQUENCY_TREND, JWT_TOKEN_KEY, API_URL_STUDENT_EMOTION_HISTORY } from "../utils/constants.js";
 
 /**
  * Mengambil token JWT dari localStorage.
@@ -22,7 +18,6 @@ async function makeApiRequest(fullUrl, options = {}) {
   const token = getAuthToken();
 
   if (!token) {
-    // Hindari 'alert', lempar error agar bisa ditangani di UI
     throw new Error("Token JWT tidak ditemukan. Silakan login kembali.");
   }
 
@@ -42,8 +37,7 @@ async function makeApiRequest(fullUrl, options = {}) {
 
   try {
     const response = await fetch(fullUrl, fetchOptions);
-    
-    // Handle response kosong (misal: 204 No Content)
+
     if (response.status === 204 || response.headers.get("content-length") === "0") {
       if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`);
       return null;
@@ -52,13 +46,12 @@ async function makeApiRequest(fullUrl, options = {}) {
     const result = await response.json();
 
     if (!response.ok) {
-      // Lempar error dengan pesan dari server jika ada
       throw new Error(result.message || `Error ${response.status}: Terjadi kesalahan server.`);
     }
     return result;
   } catch (error) {
     console.error("Kesalahan pada makeApiRequest:", error.message, "URL:", fullUrl);
-    // Lempar kembali error agar bisa ditangkap oleh pemanggilnya
+
     throw error;
   }
 }
@@ -186,29 +179,22 @@ export async function fetchEmotionSummaryForChart(periodType, params = {}) {
  * @returns {Promise<object>} Data tren untuk charting.
  */
 export async function fetchEmotionFrequencyTrend(startDate, endDate, userId = null) {
-  
-  // Tentukan URL mana yang akan digunakan berdasarkan adanya userId
   let apiUrl;
   if (userId) {
-    // Jika ada userId, kita panggil endpoint untuk guru melihat data siswa
-    // Variabel ini sekarang sudah terdefinisi karena sudah di-impor
     apiUrl = `${API_URL_STUDENT_EMOTION_HISTORY}/${userId}/emotion-history`;
   } else {
-    // Jika tidak ada, panggil endpoint untuk murid melihat datanya sendiri
     apiUrl = API_URL_EMOTION_HISTORY_FREQUENCY_TREND;
   }
 
-  // Buat query string untuk tanggal
   const queryParams = new URLSearchParams({
     start_date: startDate,
     end_date: endDate,
   }).toString();
 
   const fullUrl = `${apiUrl}?${queryParams}`;
-  
+
   console.log(`Frontend memanggil URL: ${fullUrl}`);
 
-  // Gunakan helper 'makeApiRequest' yang sudah ada
   try {
     const result = await makeApiRequest(fullUrl, { method: "GET" });
     console.log("Tren frekuensi emosi berhasil diambil:", result);

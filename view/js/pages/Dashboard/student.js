@@ -1,11 +1,8 @@
-// pages/dashboard/student.js
-
 import { fetchEmotionFrequencyTrend, fetchEmotionSummaryForChart } from "../../Services/EmotionDetectionServices.js";
 import { listMyReports, downloadReport } from "../../Services/ReportServices.js";
 import { getFormattedDate, capitalizeFirstLetter, emotionToEmojiMap, drawTextOnCanvas } from "../../utils/utils.js";
 import { renderFrequencyTrendLineChart, renderEmotionDistributionDoughnutChart } from "../../utils/chart_renderer.js";
 
-// Variabel untuk menyimpan instance chart, dikelola di dalam modul ini
 let analysisWeeklyTrendChartInstance = null;
 let analysisEmotionDistributionChartInstance = null;
 
@@ -74,7 +71,6 @@ async function loadOverviewData() {
   }
 }
 
-
 async function loadAnalysisCharts() {
   const weeklyCanvasId = "dashboardWeeklyTrendChart";
   const distributionCanvasId = "dashboardEmotionDistributionChart";
@@ -83,8 +79,7 @@ async function loadAnalysisCharts() {
     console.log("Bukan di dashboard murid, skip memuat chart.");
     return;
   }
-  
-  // Destroy old instances if they exist
+
   if (analysisWeeklyTrendChartInstance) analysisWeeklyTrendChartInstance.destroy();
   if (analysisEmotionDistributionChartInstance) analysisEmotionDistributionChartInstance.destroy();
 
@@ -131,7 +126,6 @@ async function loadAnalysisCharts() {
 async function setupStudentDashboard() {
   const tableBody = document.getElementById("student-reports-tbody");
 
-  // Hentikan jika elemen tabel tidak ditemukan di halaman
   if (!tableBody) {
     return;
   }
@@ -140,7 +134,7 @@ async function setupStudentDashboard() {
     const response = await listMyReports();
     const reports = response.data;
 
-    tableBody.innerHTML = ""; // Kosongkan tabel sebelum mengisi
+    tableBody.innerHTML = "";
 
     if (!reports || reports.length === 0) {
       const emptyRow = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Anda belum memiliki riwayat laporan.</td></tr>`;
@@ -168,7 +162,6 @@ async function setupStudentDashboard() {
       tableBody.appendChild(row);
     });
 
-    // Tambahkan event listener ke tabel untuk menangani klik pada tombol unduh
     tableBody.addEventListener("click", async (event) => {
       if (event.target && event.target.classList.contains("download-btn")) {
         const reportId = event.target.getAttribute("data-report-id");
@@ -183,7 +176,6 @@ async function setupStudentDashboard() {
           console.error("Download failed:", error);
           Swal.fire("Gagal Mengunduh", error.message || "Terjadi kesalahan saat mencoba mengunduh file.", "error");
         } finally {
-          // Kembalikan tombol ke keadaan semula setelah proses selesai
           event.target.textContent = originalButtonText;
           event.target.disabled = false;
         }
@@ -198,10 +190,57 @@ async function setupStudentDashboard() {
 
 
 /**
- * Fungsi inisialisasi untuk modul Murid.
+ * Memeriksa apakah murid sudah melengkapi profilnya (memilih kelas).
+ * Mengatur tampilan notifikasi dan bagian yang relevan sesuai kondisi profil.
  */
+function checkUserProfileCompletion() {
+  // Sebelumnya saya menyarankan "main", tapi setelah melihat HTML Anda,
+  // target yang lebih tepat adalah div container utama dashboard.
+  const dashboardContainer = document.getElementById("student-dashboard-content");
+  const reportsSection = document.getElementById("student-reports-section");
+
+  if (!dashboardContainer || !reportsSection) return;
+
+  try {
+    const userData = JSON.parse(localStorage.getItem("user"));
+
+    if (userData && userData.class_id === null) {
+      // --- KONDISI 1: MURID BELUM MEMILIH KELAS ---
+
+      // 1. Pastikan bagian laporan tetap tersembunyi
+      reportsSection.classList.add("hidden");
+
+      // 2. Buat dan tampilkan notifikasi untuk melengkapi profil
+      const profileAlertHTML = `
+        <div id="profile-completion-alert" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded-md shadow-sm" role="alert">
+          <div class="flex">
+            <div class="py-1"><svg class="fill-current h-6 w-6 text-yellow-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zM9 5v6h2V5H9zm0 8v2h2v-2H9z"/></svg></div>
+            <div>
+              <p class="font-bold">Lengkapi Profil Anda</p>
+              <p class="text-sm">Anda belum terdaftar di kelas manapun. Silakan pilih kelas Anda di halaman profil untuk melihat laporan dari guru.</p>
+              <a href="profile.html" class="mt-2 inline-block bg-yellow-500 text-white font-bold py-1 px-3 rounded text-xs hover:bg-yellow-600">Lengkapi Profil Sekarang</a>
+            </div>
+          </div>
+        </div>
+      `;
+      // Masukkan notifikasi di bagian atas konten dashboard
+      dashboardContainer.insertAdjacentHTML("afterbegin", profileAlertHTML);
+
+    } else if (userData && userData.class_id !== null) {
+      // --- KONDISI 2: MURID SUDAH MEMILIKI KELAS ---
+
+      // Tampilkan kembali bagian riwayat laporan yang tadi disembunyikan
+      reportsSection.classList.remove("hidden");
+    }
+  } catch (error) {
+    console.error("Gagal memeriksa kelengkapan profil pengguna:", error);
+  }
+}
+
+// Pastikan fungsi init() Anda masih memanggil fungsi ini
 export function init() {
   console.log("Inisialisasi modul dashboard MURID.");
+  checkUserProfileCompletion(); // Panggilan ke fungsi yang sudah diupdate
   loadOverviewData();
   loadAnalysisCharts();
   setupStudentDashboard();

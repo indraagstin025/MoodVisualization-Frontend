@@ -9,25 +9,47 @@ document.addEventListener("DOMContentLoaded", () => {
   populateClassDropdown();
 });
 
+// file: profile.js
+
 async function populateClassDropdown() {
+    // 1. Ambil data user dan elemen-elemen yang dibutuhkan
+    const currentUser = getUserData(); // Asumsi Anda punya fungsi ini yang mengambil data dari localStorage
+    const wrapper = document.getElementById('class-selection-wrapper');
+    const selectElement = document.getElementById('kelas');
+
+    // Pastikan elemen wrapper ada
+    if (!wrapper) return;
+
+    // 2. Cek peran (role) pengguna
+    // Jika tidak ada user atau perannya BUKAN 'murid', hentikan eksekusi fungsi.
+    if (!currentUser || currentUser.role !== 'murid') {
+        console.log("Role bukan murid, dropdown kelas tidak ditampilkan.");
+        return; // <-- Ini bagian terpenting
+    }
+
+    // 3. Jika peran adalah 'murid', tampilkan wrapper dan lanjutkan proses
+    wrapper.classList.remove('hidden'); // Tampilkan div pembungkus
+
     try {
         const classes = await getAllClasses();
-        const selectElement = document.getElementById('kelas');
-        const currentUser = getUserData(); // Asumsi Anda punya fungsi ini
+        
+        // Kosongkan opsi yang ada (kecuali yang pertama) untuk menghindari duplikasi
+        selectElement.innerHTML = '<option value="">-- Pilih Kelas Anda --</option>';
 
         classes.forEach(cls => {
             const option = document.createElement('option');
             option.value = cls.id;
             option.textContent = cls.name;
+            
             // Jika ID kelas siswa cocok, buat sebagai pilihan default
-            if (currentUser && currentUser.class_id == cls.id) {
+            if (currentUser.class_id == cls.id) {
                 option.selected = true;
             }
             selectElement.appendChild(option);
         });
     } catch (error) {
         console.error("Gagal memuat daftar kelas:", error);
-        // Anda bisa menampilkan pesan error di UI
+        wrapper.innerHTML = '<p class="text-red-500 text-sm">Gagal memuat daftar kelas.</p>';
     }
 }
 
