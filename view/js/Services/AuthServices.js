@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "/api";
 
 /**
  * Mengirim data registrasi pengguna ke API.
@@ -13,11 +13,12 @@ export async function registerUser(name, email, password, passwordConfirmation) 
   };
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/register`, {
+    const response = await fetch(`${API_BASE_URL}/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        "ngrok-skip-browser-warning": "true", // Ditambahkan di sini
       },
       body: JSON.stringify(formData),
     });
@@ -46,11 +47,12 @@ export async function loginUser(email, password) {
   const formData = { email, password };
   try {
     // PENYESUAIAN: URL diubah ke /api/login
-    const response = await fetch(`${API_BASE_URL}/api/login`, {
+    const response = await fetch(`${API_BASE_URL}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        "ngrok-skip-browser-warning": "true", // Ditambahkan di sini
       },
       body: JSON.stringify(formData),
     });
@@ -83,10 +85,11 @@ export async function logoutUser() {
   try {
     // PENYESUAIAN: Panggil endpoint logout di backend untuk keamanan
     if (token) {
-      await fetch(`${API_BASE_URL}/api/logout`, {
+      await fetch(`${API_BASE_URL}/logout`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true", // Ditambahkan di sini
         },
       });
     }
@@ -109,11 +112,12 @@ export async function getLoggedInUser() {
 
   try {
     // PENYESUAIAN: URL diubah ke /api/me
-    const response = await fetch(`${API_BASE_URL}/api/me`, {
+    const response = await fetch(`${API_BASE_URL}/me`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
+        "ngrok-skip-browser-warning": "true", // Ditambahkan di sini
       },
     });
     const result = await response.json();
@@ -134,11 +138,12 @@ export async function updateUserProfile(formData) {
 
   try {
     // PENYESUAIAN: URL diubah ke /api/profile
-    const response = await fetch(`${API_BASE_URL}/api/profile`, {
+    const response = await fetch(`${API_BASE_URL}/profile`, {
       method: "POST",
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": "true", // Ditambahkan di sini
       },
       body: formData,
     });
@@ -169,12 +174,13 @@ export async function createUserByAdmin(userData) {
   if (!token) throw new Error("Token otentikasi admin tidak ditemukan.");
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
+    const response = await fetch(`${API_BASE_URL}/admin/users`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": "true", // Ditambahkan di sini
       },
       body: JSON.stringify(userData),
     });
@@ -203,11 +209,12 @@ export async function getAllUsersByAdmin() {
   if (!token) throw new Error("Token otentikasi admin tidak ditemukan.");
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
+    const response = await fetch(`${API_BASE_URL}/admin/users`, {
       method: "GET",
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": "true", // Ditambahkan di sini
       },
     });
     const result = await response.json();

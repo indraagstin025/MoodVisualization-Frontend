@@ -28,6 +28,7 @@ export async function createReport(studentId, startDate, endDate, chartImageBase
         "Content-Type": "application/json",
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": "true", // Ditambahkan di sini
       },
       body: JSON.stringify(reportData),
     });
@@ -62,11 +63,12 @@ export async function listMyReports() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/reports`, {
+    const response = await fetch(`${API_BASE_URL}/reports`, {
       method: "GET",
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": "true", // Ditambahkan di sini
       },
     });
 
@@ -92,10 +94,11 @@ export async function downloadReport(reportId) {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/reports/${reportId}/download`, {
+    const response = await fetch(`${API_BASE_URL}/reports/${reportId}/download`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": "true", // Ditambahkan di sini
       },
     });
 

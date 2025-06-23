@@ -12,7 +12,7 @@ export async function getMyStudents(classId = "") {
     throw new Error("Sesi Anda telah berakhir. Silakan login kembali.");
   }
 
-  let apiUrl = `${API_BASE_URL}/api/teacher/students`;
+  let apiUrl = `${API_BASE_URL}/teacher/students`;
 
   if (classId) {
     apiUrl += `?class_id=${classId}`;
@@ -24,6 +24,7 @@ export async function getMyStudents(classId = "") {
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": "true", // Ditambahkan di sini
       },
     });
 

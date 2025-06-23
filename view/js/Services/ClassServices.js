@@ -9,10 +9,11 @@ export async function getAllClasses() {
   if (!token) throw new Error("Akses ditolak. Token tidak ditemukan.");
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/classes`, {
+    const response = await fetch(`${API_BASE_URL}/classes`, {
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": "true", // Ditambahkan di sini
       },
     });
     const result = await response.json();
@@ -37,7 +38,8 @@ export async function createClass(classData) { // <-- SEKARANG MENERIMA OBJEK 'c
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Authorization': `Bearer ${token}`,
+      "ngrok-skip-browser-warning": "true", // Ditambahkan di sini
     },
     // Langsung kirim objek yang diterima dari admin.js
     body: JSON.stringify(classData) 

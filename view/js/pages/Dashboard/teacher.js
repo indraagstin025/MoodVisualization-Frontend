@@ -11,14 +11,17 @@ let historyChartInstance = null;
 const DEFAULT_AVATAR_PATH = "/public/img/default-avatar.jpg";
 
 const getStudentPhotoUrl = (photoFilename) => {
-  if (photoFilename) {
-    if (photoFilename.startsWith("http://") || photoFilename.startsWith("https://")) {
-      return photoFilename;
-    }
-    return `${API_BASE_URL}/profile/${photoFilename}`;
+  if (!photoFilename) return DEFAULT_AVATAR_PATH;
+
+  if (photoFilename.startsWith("http://") || photoFilename.startsWith("https://")) {
+    return photoFilename;
   }
-  return DEFAULT_AVATAR_PATH;
+
+  // ✅ Jangan pakai API_BASE_URL karena route file bukan melalui /api
+  return `https://m00thzqr-5173.asse.devtunnels.ms/profile/${photoFilename}`;
 };
+
+
 
 /**
  * Fungsi inisialisasi utama untuk modul dashboard pengajar.
@@ -165,9 +168,13 @@ function openProfileModal() {
 
   const photoEl = document.getElementById("modal-student-photo");
   photoEl.onerror = () => { photoEl.onerror = null; photoEl.src = DEFAULT_AVATAR_PATH; };
-  photoEl.src = getStudentPhotoUrl(selectedStudent.photo);
+  
+  // ✅ GANTI INI
+  photoEl.src = getStudentPhotoUrl(selectedStudent.photo); // bukan selectedStudent.photo_url
+  
   document.getElementById("profile-modal").classList.remove("hidden");
 }
+
 
 function openHistoryModal() {
   if (!selectedStudent) return;

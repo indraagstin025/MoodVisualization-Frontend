@@ -25,6 +25,7 @@ async function makeApiRequest(fullUrl, options = {}) {
     "Content-Type": "application/json",
     Accept: "application/json",
     Authorization: `Bearer ${token}`,
+    "ngrok-skip-browser-warning": "true", // Header ngrok sudah ada di sini
   };
 
   const fetchOptions = {
@@ -77,7 +78,7 @@ export async function saveEmotionRecord(emotionData) {
   };
 
   try {
-    const result = await makeApiRequest(API_URL_EMOTION_RECORDS, {
+    const result = await makeApiRequest(API_URL_EMOTION_RECORDS, { // makeApiRequest sudah menyertakan header ngrok
       method: "POST",
       body: JSON.stringify(payload),
     });
@@ -100,7 +101,7 @@ export async function fetchEmotionHistory(page = 1, perPage = 15) {
   const fullUrl = `${API_URL_EMOTION_RECORDS}${queryParams}`;
 
   try {
-    const result = await makeApiRequest(fullUrl, { method: "GET" });
+    const result = await makeApiRequest(fullUrl, { method: "GET" }); // makeApiRequest sudah menyertakan header ngrok
     console.log("Riwayat emosi berhasil diambil:", result);
     return result;
   } catch (error) {
@@ -117,7 +118,7 @@ export async function fetchEmotionHistory(page = 1, perPage = 15) {
 export async function fetchEmotionRecordById(recordId) {
   const fullUrl = `${API_URL_EMOTION_RECORDS}/${recordId}`;
   try {
-    const result = await makeApiRequest(fullUrl, { method: "GET" });
+    const result = await makeApiRequest(fullUrl, { method: "GET" }); // makeApiRequest sudah menyertakan header ngrok
     console.log(`Catatan emosi ID ${recordId} berhasil diambil:`, result);
     return result;
   } catch (error) {
@@ -134,7 +135,7 @@ export async function fetchEmotionRecordById(recordId) {
 export async function deleteEmotionRecordById(recordId) {
   const fullUrl = `${API_URL_EMOTION_RECORDS}/${recordId}`;
   try {
-    const result = await makeApiRequest(fullUrl, { method: "DELETE" });
+    const result = await makeApiRequest(fullUrl, { method: "DELETE" }); // makeApiRequest sudah menyertakan header ngrok
     console.log(`Catatan emosi ID ${recordId} berhasil dihapus:`, result);
     return result;
   } catch (error) {
@@ -147,7 +148,7 @@ export async function deleteEmotionRecordById(recordId) {
  * Mengambil ringkasan rata-rata skor emosi untuk grafik.
  * @param {string} periodType - 'weekly' atau 'monthly'.
  * @param {object} params - Parameter tambahan seperti { date: 'YYYY-MM-DD' } untuk mingguan,
- * atau { year: YYYY, month: MM } untuk bulanan.
+ * atau { year:YYYY, month: MM } untuk bulanan.
  * @returns {Promise<object>} Objek yang berisi summary_emotion dan average_scores.
  */
 export async function fetchEmotionSummaryForChart(periodType, params = {}) {
@@ -161,7 +162,7 @@ export async function fetchEmotionSummaryForChart(periodType, params = {}) {
 
   const fullUrl = `${API_URL_EMOTION_HISTORY_SUMMARY}?${queryParams.toString()}`;
   try {
-    const result = await makeApiRequest(fullUrl, { method: "GET" });
+    const result = await makeApiRequest(fullUrl, { method: "GET" }); // makeApiRequest sudah menyertakan header ngrok
     console.log(`Ringkasan emosi (${periodType}) berhasil diambil:`, result);
     return result;
   } catch (error) {
@@ -196,7 +197,7 @@ export async function fetchEmotionFrequencyTrend(startDate, endDate, userId = nu
   console.log(`Frontend memanggil URL: ${fullUrl}`);
 
   try {
-    const result = await makeApiRequest(fullUrl, { method: "GET" });
+    const result = await makeApiRequest(fullUrl, { method: "GET" }); // makeApiRequest sudah menyertakan header ngrok
     console.log("Tren frekuensi emosi berhasil diambil:", result);
     return result;
   } catch (error) {
